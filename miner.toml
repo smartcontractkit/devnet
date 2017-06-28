@@ -5,6 +5,7 @@ db_path = "./data/miner"
 port = 30303
 [rpc]
 port = 7434
+cors = "*"
 apis = ["web3", "eth", "net", "personal", "parity", "parity_set", "traces", "rpc", "parity_accounts"]
 [account]
 password = ["node.pwds"]
