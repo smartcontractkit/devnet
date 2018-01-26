@@ -8,6 +8,7 @@ port = 7434
 cors = "*"
 apis = ["web3", "eth", "net", "personal", "parity", "parity_set", "traces", "rpc", "parity_accounts"]
 [account]
+unlock = ["0xDe554B6c292f5e5794A68Dc560a537DD89d3b03E", "0x9CA9d2D5E04012C9Ed24C0e513C9bfAa4A2dD77f", "0xa5F108b6d82b9F080325F935F3BAf89e0042CAC8"]
 password = ["node.pwds"]
 [mining]
 engine_signer = "0xDe554B6c292f5e5794A68Dc560a537DD89d3b03E"
