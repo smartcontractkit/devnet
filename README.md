@@ -5,10 +5,15 @@ Provides funding for accounts used in various Smart Contract Kit test suites.
 
 ## Requirements
 
-- [Parity](https://github.com/paritytech/parity)
+- [Docker](https://www.docker.com/)
+
+## Install
+```
+docker pull smartcontract/devnet
+```
 
 ## Run
 
 ```
-./start
+docker run smartcontract/devnet
 ```
