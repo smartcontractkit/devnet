@@ -13,7 +13,7 @@ reserved_peers = "./network.txt"
 disable = false
 port = 8545
 apis = ["all"]
-cors = ["*"]
+cors = "*"
 hosts = ["all"]
 interface = "all"
 
