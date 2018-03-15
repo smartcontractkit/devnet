@@ -1,7 +1,7 @@
 REPO=smartcontract/devnet
 
 .DEFAULT_GOAL := build
-.PHONY: build push run
+.PHONY: build push run ropsten
 
 
 build:
@@ -12,3 +12,6 @@ run:
 
 push:
 	docker push $(REPO)
+
+ropsten:
+	docker run -p 18545:8545 -p 18546:8546 $(REPO):latest --chain ropsten
