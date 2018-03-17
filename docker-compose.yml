@@ -1,0 +1,36 @@
+version: '2'
+services:
+  testnet:
+    image: smartcontract/devnet
+    logging:
+      driver: "awslogs"
+      options:
+        awslogs-region: "us-east-1"
+        awslogs-group: "log-testnet"
+        awslogs-stream-prefix: "log-testnet-stream"
+    command: --config testnet.toml
+    volumes:
+      - /testnet:/testnet
+    ports:
+      - "8545:8545"
+      - "8546:8546"
+  chainlink:
+    image: smartcontract/chainlink
+    logging:
+      driver: "awslogs"
+      options:
+        awslogs-region: "us-east-1"
+        awslogs-group: "log-testnet"
+        awslogs-stream-prefix: "log-testnet-stream"
+    command: node --password twochains
+    volumes:
+      - /chainlink:/chainlink
+    ports:
+      - "6688:6688"
+    depends_on:
+      - testnet
+    environment:
+      - ROOT=/chainlink
+      - LOG_LEVEL=debug
+      - ETH_URL=ws://testnet:8546
+      - ETH_CHAIN_ID=3
