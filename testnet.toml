@@ -1,11 +1,11 @@
 [parity]
 chain = "ropsten"
-base_path = "/testnet"
-db_path = "/testnet/chains"
-keys_path = "/testnet/keys"
+base_path = "/parity"
+db_path = "/parity/chains"
+keys_path = "/parity/keys"
 
 [dapps]
-path = "/testnet/dapps"
+path = "/parity/dapps"
 
 [rpc]
 disable = false

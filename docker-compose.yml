@@ -1,16 +1,16 @@
 version: '2'
 services:
-  testnet:
+  parity:
     image: smartcontract/devnet
     logging:
       driver: "awslogs"
       options:
         awslogs-region: "us-east-1"
         awslogs-group: "log-testnet"
-        awslogs-stream-prefix: "log-testnet-stream"
+        awslogs-stream-prefix: "stream-testnet"
     command: --config testnet.toml
     volumes:
-      - /testnet:/testnet
+      - /parity:/parity
     ports:
       - "8545:8545"
       - "8546:8546"
@@ -21,16 +21,16 @@ services:
       options:
         awslogs-region: "us-east-1"
         awslogs-group: "log-testnet"
-        awslogs-stream-prefix: "log-testnet-stream"
+        awslogs-stream-prefix: "stream-testnet"
     command: node --password twochains
     volumes:
       - /chainlink:/chainlink
     ports:
       - "6688:6688"
     links:
-      - testnet
+      - parity
     environment:
       - ROOT=/chainlink
       - LOG_LEVEL=debug
-      - ETH_URL=ws://testnet:8546
+      - ETH_URL=ws://parity:8546
       - ETH_CHAIN_ID=3
