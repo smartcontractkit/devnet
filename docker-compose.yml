@@ -27,7 +27,7 @@ services:
       - /chainlink:/chainlink
     ports:
       - "6688:6688"
-    depends_on:
+    links:
       - testnet
     environment:
       - ROOT=/chainlink
