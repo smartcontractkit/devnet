@@ -1,6 +1,6 @@
 version: '2'
 services:
-  parity:
+  testnet:
     image: smartcontract/devnet
     logging:
       driver: "awslogs"
@@ -10,7 +10,7 @@ services:
         awslogs-stream-prefix: "stream-testnet"
     command: --config testnet.toml
     volumes:
-      - /parity:/parity
+      - /testnet:/testnet
     ports:
       - "8545:8545"
       - "8546:8546"
@@ -28,9 +28,9 @@ services:
     ports:
       - "6688:6688"
     links:
-      - parity
+      - testnet
     environment:
       - ROOT=/chainlink
       - LOG_LEVEL=debug
-      - ETH_URL=ws://parity:8546
+      - ETH_URL=ws://testnet:8546
       - ETH_CHAIN_ID=3
