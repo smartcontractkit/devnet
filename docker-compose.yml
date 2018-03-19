@@ -1,0 +1,36 @@
+version: '2'
+services:
+  ethereum:
+    image: smartcontract/devnet
+    logging:
+      driver: "awslogs"
+      options:
+        awslogs-region: "us-east-1"
+        awslogs-group: "log-testnet"
+        awslogs-stream-prefix: "stream-testnet"
+    command: --config ropsten.toml
+    volumes:
+      - /ethereum:/ethereum
+    ports:
+      - "8545:8545"
+      - "8546:8546"
+  chainlink:
+    image: smartcontract/chainlink
+    logging:
+      driver: "awslogs"
+      options:
+        awslogs-region: "us-east-1"
+        awslogs-group: "log-testnet"
+        awslogs-stream-prefix: "stream-testnet"
+    command: node --password twochains
+    volumes:
+      - /chainlink:/chainlink
+    ports:
+      - "6688:6688"
+    links:
+      - ethereum
+    environment:
+      - ROOT=/chainlink
+      - LOG_LEVEL=debug
+      - ETH_URL=ws://ethereum:8546
+      - ETH_CHAIN_ID=3

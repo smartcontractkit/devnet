@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -e
+
+ecs-cli up --capability-iam --size 1 --instance-type t2.small --force
