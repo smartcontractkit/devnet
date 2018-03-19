@@ -38,8 +38,8 @@ brew install awscli amazon-ecs-cli
 
 # Configure awscli and set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
 
-./ecs-cli-configure
-./ecs-cli-up
+./configure-ecs-cli
+./testnet-cluster-up
 # After completion wait for a minute for resources to be available
 
 ecs-cli compose up
