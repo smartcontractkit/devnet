@@ -1,6 +1,6 @@
 version: '2'
 services:
-  testnet:
+  ethereum:
     image: smartcontract/devnet
     logging:
       driver: "awslogs"
@@ -8,9 +8,9 @@ services:
         awslogs-region: "us-east-1"
         awslogs-group: "log-testnet"
         awslogs-stream-prefix: "stream-testnet"
-    command: --config testnet.toml
+    command: --config ropsten.toml
     volumes:
-      - /testnet:/testnet
+      - /ethereum:/ethereum
     ports:
       - "8545:8545"
       - "8546:8546"
@@ -28,9 +28,9 @@ services:
     ports:
       - "6688:6688"
     links:
-      - testnet
+      - ethereum
     environment:
       - ROOT=/chainlink
       - LOG_LEVEL=debug
-      - ETH_URL=ws://testnet:8546
+      - ETH_URL=ws://ethereum:8546
       - ETH_CHAIN_ID=3

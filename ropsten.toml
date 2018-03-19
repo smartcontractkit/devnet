@@ -1,11 +1,11 @@
 [parity]
 chain = "ropsten"
-base_path = "/testnet"
-db_path = "/testnet/chains"
-keys_path = "/testnet/keys"
+base_path = "/ethereum"
+db_path = "/ethereum/chains"
+keys_path = "/ethereum/keys"
 
 [dapps]
-path = "/testnet/dapps"
+path = "/ethereum/dapps"
 
 [rpc]
 disable = false

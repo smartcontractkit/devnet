@@ -13,5 +13,5 @@ run:
 push:
 	docker push $(REPO)
 
-testnet:
-	docker run -p 18545:8545 -p 18546:8546 $(REPO):latest --config testnet.toml
+ropsten:
+	docker run -p 18545:8545 -p 18546:8546 $(REPO):latest --config ropsten.toml
