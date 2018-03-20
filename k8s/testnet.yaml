@@ -1,0 +1,79 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: testnet-svc
+spec:
+  selector:
+    app: testnet
+  ports:
+    - name: cl
+      protocol: TCP
+      port: 6688
+      targetPort: 6688
+    - name: rpc
+      protocol: TCP
+      port: 8545
+      targetPort: 8545
+    - name: ws
+      protocol: TCP
+      port: 8546
+      targetPort: 8546
+  clusterIP: None
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testnet-deploy
+spec:
+  selector:
+    matchLabels:
+      app: testnet
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: testnet
+    spec:
+      containers:
+        - name: ethereum
+          image: smartcontract/devnet
+          args: ["--config", "testnet.toml"]
+          ports:
+            - containerPort: 8545
+            - containerPort: 8546
+          volumeMounts:
+            - name: pv-storage
+              mountPath: /data
+        - name: chainlink
+          image: smartcontract/chainlink
+          args: ["node", "--password", "twochains"]
+          ports:
+            - containerPort: 6688
+          env:
+            - name: ROOT
+              value: "/data/chainlink"
+            - name: LOG_LEVEL
+              value: "debug"
+            - name: ETH_URL
+              value: "ws://localhost:8546"
+            - name: ETH_CHAIN_ID
+              value: "3"
+          volumeMounts:
+            - name: pv-storage
+              mountPath: /data
+      volumes:
+        - name: pv-storage
+          persistentVolumeClaim:
+            claimName: pv-claim

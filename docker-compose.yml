@@ -8,7 +8,7 @@ services:
         awslogs-region: "us-east-1"
         awslogs-group: "log-testnet"
         awslogs-stream-prefix: "stream-testnet"
-    command: --config ropsten.toml
+    command: --config ecs.toml
     volumes:
       - /ethereum:/ethereum
     ports:
