@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: web-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: testnet-ip
+spec:
+  - backend:
+    serviceName: testnet-svc
+    servicePort: 8545
+  - backend:
+    serviceName: testnet-svc
+    servicePort: 8546
+  - backend:
+    serviceName: testnet-svc
+    servicePort: 6688
