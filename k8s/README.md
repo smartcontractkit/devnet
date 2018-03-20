@@ -25,3 +25,13 @@ make configure cluster testnet info
 # Redeploy after updating images
 make rollout
 ```
+
+#### Logs
+
+You can see logs of containers by finding the corresponding pod
+id with `make info` and using the commands below:
+
+```
+kubectl logs po/testnet-deploy-84c6b4686c-kkp5x chainlink
+kubectl logs po/testnet-deploy-84c6b4686c-kkp5x ethereum
+```

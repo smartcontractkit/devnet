@@ -17,16 +17,19 @@ cluster:
 testnet:
 	kubectl apply -f testnet.yaml
 
-ssh:
-	kubectl exec -it $(POD) -- /bin/bash
+sshchainlink:
+	kubectl exec -it $(POD) -c chainlink -- /bin/sh
+
+sshethereum:
+	kubectl exec -it $(POD) -c ethereum -- /bin/bash
 
 info:
 	kubectl cluster-info
-	kubectl get ingress,services,deployments,rs,pods -o wide
+	kubectl get no,pv,svc,deploy,po -o wide
 
 proxy:
 	open 'http://127.0.0.1:8001/ui'
-	kubectl proxy --kubeconfig="$(HOME)/.kube/config"
+	kubectl proxy
 
 rollout:
 	kubectl patch deployment testnet-deploy -p \
