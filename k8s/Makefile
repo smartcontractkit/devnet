@@ -1,5 +1,5 @@
-.PHONY: testnet fixwebsockettimeout ssh
-.PHONY: info rollout rollback
+.PHONY: configure cluster testnet ssh info proxy
+.PHONY: rollout rollback bootstrap-cluster delete-testnet
 
 PROJECT_ID=chainlink-dimroc
 ROLLOUT_PATCH = '{"spec":{"template":{"spec":{"containers":[{"name":"CONTNAME","image":"CONTSHA"}]}}}}'
@@ -16,12 +16,6 @@ cluster:
 
 testnet:
 	kubectl apply -f testnet.yaml
-
-fixwebsockettimeout:
-	# https://cloud.google.com/compute/docs/load-balancing/http/backend-service
-	# BACKEND = [BACKEND_SERVICE_NAME] i.e. k8s-be-31452--e8b4d6bed11fac7b
-	# gcloud compute backend-services list
-	gcloud compute backend-services update $(BACKEND) --global --timeout=86400
 
 ssh:
 	kubectl exec -it $(POD) -- /bin/bash
@@ -44,3 +38,6 @@ rollback:
 	kubectl rollout undo deployment/testnet-deploy
 
 bootstrap-cluster: configure cluster testnet info
+
+delete-testnet:
+	kubectl delete -f testnet.yaml
