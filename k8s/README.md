@@ -6,8 +6,9 @@ and deploy Parity against Ropsten with an attached Chainlink node.
 #### Requirements:
 
 1. Valid GCP account.
-2. [`gcloud` CLI tool](https://github.com/Homebrew/homebrew-core/issues/583#issuecomment-214024802) installed.
-3. [`kubectl` CLI tool](https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-with-homebrew-on-macos) installed.
+2. Create project chainlink-testnet on GCP and enable the kubernetes engine by visiting [the web portal](https://console.cloud.google.com/kubernetes/list).
+3. [`gcloud` CLI tool](https://github.com/Homebrew/homebrew-core/issues/583#issuecomment-214024802) installed.
+4. [`kubectl` CLI tool](https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-with-homebrew-on-macos) installed.
 
 #### Steps:
 
