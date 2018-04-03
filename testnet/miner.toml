@@ -1,0 +1,39 @@
+[parity]
+chain = "ropsten"
+base_path = "./testnet"
+db_path = "./testnet/chains"
+keys_path = "./testnet/keys"
+
+[dapps]
+path = "./dapps"
+
+[rpc]
+disable = false
+port = 8545
+apis = ["all"]
+cors = ["*"]
+hosts = ["all"]
+interface = "all"
+
+[websockets]
+disable = false
+port = 8546
+interface = "all"
+origins = ["all"]
+apis = ["all"]
+hosts = ["all"]
+
+[mining]
+engine_signer = "0x0000000000000000000000000000000000000000"
+reseal_on_txs = "none"
+min_gas_price = 100
+
+[misc]
+logging = "lsync=trace,txqueue=trace,own_tx=trace"
+
+[ipc]
+disable = false
+apis = ["all"]
+
+[footprint]
+tracing = "auto"
