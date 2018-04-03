@@ -1,11 +1,11 @@
 [parity]
 chain = "ropsten"
-base_path = "/data/ethereum"
-db_path = "/data/ethereum/chains"
-keys_path = "/data/ethereum/keys"
+base_path = "./testnet"
+db_path = "./testnet/chains"
+keys_path = "./testnet/keys"
 
 [dapps]
-path = "/data/ethereum/dapps"
+path = "./dapps"
 
 [rpc]
 disable = false
@@ -22,3 +22,7 @@ interface = "all"
 origins = ["all"]
 apis = ["all"]
 hosts = ["all"]
+
+[ipc]
+disable = false
+apis = ["all"]
