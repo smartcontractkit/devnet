@@ -49,7 +49,7 @@ spec:
       containers:
         - name: ethereum
           image: smartcontract/devnet
-          args: ["--config", "testnet.toml"]
+          args: ["--config", "./k8s/ropsten.toml"]
           ports:
             - containerPort: 8545
             - containerPort: 8546
