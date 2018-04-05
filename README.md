@@ -18,6 +18,14 @@ docker pull smartcontract/devnet
 docker run smartcontract/devnet
 ```
 
+## Run Against Ropsten
+
+This also maps the host machine's port 18545 and 18546 to the containter's ports 8545 and 8546 respectively.
+
+```
+docker run -p 18545:8545 -p 18546:8546 smartcontract/devnet:latest --config /devnet/testnet.toml
+```
+
 
 ## Deploying Testnet
 
