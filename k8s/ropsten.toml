@@ -22,3 +22,6 @@ interface = "all"
 origins = ["all"]
 apis = ["all"]
 hosts = ["all"]
+
+[ipc]
+disable = true
