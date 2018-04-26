@@ -42,4 +42,4 @@ apis = ["all"]
 hosts = ["all"]
 
 [footprint]
-tracing = "auto"
+tracing = "on"
