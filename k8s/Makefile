@@ -32,9 +32,9 @@ proxy:
 	kubectl proxy
 
 rollout:
-	kubectl patch deployment testnet-deploy -p \
-		$(subst CONTSHA,$(shell ./docker-repodigest devnet),$(subst CONTNAME,ethereum,$(ROLLOUT_PATCH)))
-	kubectl patch deployment testnet-deploy -p \
+	-kubectl patch deployment ethereum-deploy -p \
+		$(subst CONTSHA,$(shell ./docker-repodigest ethereum),$(subst CONTNAME,ethereum,$(ROLLOUT_PATCH)))
+	-kubectl patch deployment chainlink-deploy -p \
 		$(subst CONTSHA,$(shell ./docker-repodigest chainlink),$(subst CONTNAME,chainlink,$(ROLLOUT_PATCH)))
 
 rollback:
@@ -44,3 +44,6 @@ bootstrap-cluster: configure cluster testnet info
 
 delete-testnet:
 	kubectl delete -f testnet.yaml
+
+secrets:
+	kubectl create secret generic cl-environment --from-env-file=.env --dry-run=true -o yaml | kubectl apply -f -
