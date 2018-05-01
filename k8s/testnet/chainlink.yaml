@@ -20,7 +20,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 16Gi
+      storage: 128Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
