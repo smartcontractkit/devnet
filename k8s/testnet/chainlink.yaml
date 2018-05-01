@@ -1,0 +1,60 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: chainlink-svc
+spec:
+  selector:
+    app: chainlink
+  ports:
+    - name: cl
+      protocol: TCP
+      port: 6688
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: chainlink-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 16Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chainlink-deploy
+spec:
+  selector:
+    matchLabels:
+      app: chainlink
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: chainlink
+    spec:
+      containers:
+        - name: chainlink
+          image: smartcontract/chainlink
+          args: ["node", "--password", "$(WALLET_PASSWORD)"]
+          ports:
+            - containerPort: 6688
+          env:
+            - name: ROOT
+              value: "/data/chainlink"
+            - name: ETH_URL
+              value: "ws://ethereum-svc.default.svc.cluster.local:8546"
+          envFrom:
+            - secretRef:
+                name: cl-environment
+          volumeMounts:
+            - name: chainlink-storage
+              mountPath: /data
+      volumes:
+        - name: chainlink-storage
+          persistentVolumeClaim:
+            claimName: chainlink-pv-claim

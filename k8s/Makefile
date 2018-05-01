@@ -15,7 +15,8 @@ cluster:
 		--cluster-version 1.9
 
 testnet:
-	kubectl apply -f testnet.yaml
+	kubectl apply -f testnet/ethereum.yaml
+	kubectl apply -f testnet/chainlink.yaml
 
 sshchainlink:
 	kubectl exec -it $(POD) -c chainlink -- /bin/sh
@@ -43,7 +44,8 @@ rollback:
 bootstrap-cluster: configure cluster testnet info
 
 delete-testnet:
-	kubectl delete -f testnet.yaml
+	kubectl delete -f testnet/ethereum.yaml
+	kubectl delete -f testnet/chainlink.yaml
 
 secrets:
 	kubectl create secret generic cl-environment --from-env-file=.env --dry-run=true -o yaml | kubectl apply -f -
