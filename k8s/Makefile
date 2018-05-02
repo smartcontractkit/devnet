@@ -26,7 +26,7 @@ sshethereum:
 
 info:
 	kubectl cluster-info
-	kubectl get no,pv,svc,deploy,po -o wide
+	kubectl get no,pvc,pv,svc,deploy,po -o wide
 
 proxy:
 	open 'http://127.0.0.1:8001/ui'
