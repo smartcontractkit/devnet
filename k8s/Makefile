@@ -2,6 +2,7 @@
 .PHONY: rollout rollback bootstrap-cluster delete-testnet
 
 PROJECT_ID=chainlink-testnet
+CLUSTER_NAME=cluster-testnet
 ROLLOUT_PATCH = '{"spec":{"template":{"spec":{"containers":[{"name":"CONTNAME","image":"CONTSHA"}]}}}}'
 
 configure:
@@ -9,9 +10,10 @@ configure:
 	gcloud config set compute/zone us-east1-c
 	gcloud auth login
 	gcloud config list
+	gcloud container clusters get-credentials $(CLUSTER_NAME)
 
 cluster:
-	gcloud container clusters create cluster-testnet \
+	gcloud container clusters create $(CLUSTER_NAME) \
 		--cluster-version 1.9
 
 testnet:
