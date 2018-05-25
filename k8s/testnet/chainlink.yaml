@@ -1,60 +1,85 @@
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
-  name: chainlink-svc
+  name: chainlink-service
 spec:
   selector:
-    app: chainlink
-  ports:
-    - name: cl
-      protocol: TCP
-      port: 6688
+    habitat-name: chainlink
   type: LoadBalancer
+  ports:
+  - name: cl
+    protocol: TCP
+    port: 6688
+---
+apiVersion: habitat.sh/v1beta1
+kind: Habitat
+metadata:
+  name: chainlink
+customVersion: v1beta2
+spec:
+  v1beta2:
+    image: smartcontract/chainlink
+    count: 1
+    service:
+      name: chainlink
+      topology: standalone
+      group: default
+    ports:
+      - containerPort: 6688
+    env:
+      - name: ROOT
+        value: "/data/chainlink"
+      - name: ETH_URL
+        value: "ws://ethereum-svc.default.svc.cluster.local:8546"
+    persistentStorage:
+      mountPath: /data
+      size: 128Gi
+      storageClassName: standard
+
+  #selector:
+    #matchLabels:
+      #app: chainlink
+  #strategy:
+    #type: Recreate
+  #template:
+    #metadata:
+      #labels:
+        #app: chainlink
+    #spec:
+      #containers:
+        #- name: chainlink
+          #image: smartcontract/chainlink
+          # FIXME: This is insecure we'll need to find a better way, also the
+          # habitat supervisor is the entrypoint for a Habitat docker image...
+          #args: ["node", "--password", "$(WALLET_PASSWORD)"]
+          # XXX: supported in habitat?
+          #ports:
+            #- containerPort: 6688
+          #env:
+            #- name: ROOT
+              #value: "/data/chainlink"
+            #- name: ETH_URL
+              #value: "ws://ethereum-svc.default.svc.cluster.local:8546"
+          # FIXME: How to do this for a `Habitat`
+          #envFrom:
+            #- secretRef:
+                #name: cl-environment
+          # FIXME: Looks like persistentStorage does this, but not sure if compatible...
+          #volumeMounts:
+            #- name: chainlink-storage
+              #mountPath: /data
+      #volumes:
+        #- name: chainlink-storage
+          #persistentVolumeClaim:
+            #claimName: chainlink-pv-claim
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: chainlink-pv-claim
+  name: persistent-chainlink-0
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 128Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: chainlink-deploy
-spec:
-  selector:
-    matchLabels:
-      app: chainlink
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: chainlink
-    spec:
-      containers:
-        - name: chainlink
-          image: smartcontract/chainlink
-          args: ["node", "--password", "$(WALLET_PASSWORD)"]
-          ports:
-            - containerPort: 6688
-          env:
-            - name: ROOT
-              value: "/data/chainlink"
-            - name: ETH_URL
-              value: "ws://ethereum-svc.default.svc.cluster.local:8546"
-          envFrom:
-            - secretRef:
-                name: cl-environment
-          volumeMounts:
-            - name: chainlink-storage
-              mountPath: /data
-      volumes:
-        - name: chainlink-storage
-          persistentVolumeClaim:
-            claimName: chainlink-pv-claim

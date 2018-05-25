@@ -1,10 +1,10 @@
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
-  name: ethereum-svc
+  name: ethereum-service
 spec:
   selector:
-    app: ethereum
+    habitat-name: ethereum
   ports:
     - name: rpc
       protocol: TCP
@@ -14,43 +14,60 @@ spec:
       port: 8546
   type: LoadBalancer
 ---
+apiVersion: habitat.sh/v1beta1
+kind: Habitat
+metadata:
+  name: ethereum
+customVersion: v1beta2
+spec:
+  v1beta2:
+    image: smartcontract/ethereum
+    count: 1
+    service:
+      name: ethereum
+      topology: standalone
+      group: default
+    ports:
+      - containerPort: 8545
+      - containerPort: 8546
+    persistentStorage:
+      mountPath: /data
+      size: 128Gi
+      storageClassName: standard
+
+#spec:
+  #selector:
+    #matchLabels:
+      #app: ethereum
+  #strategy:
+    #type: Recreate
+  #template:
+    #metadata:
+      #labels:
+        #app: ethereum
+    #spec:
+      #containers:
+        #- name: ethereum
+          #image: smartcontract/ethereum
+          #args: ["--config", "/devnet/k8s/ropsten.toml"]
+          #ports:
+            #- containerPort: 8545
+            #- containerPort: 8546
+          #volumeMounts:
+            #- name: ethereum-storage
+              #mountPath: /data
+      #volumes:
+        #- name: ethereum-storage
+          #persistentVolumeClaim:
+            #claimName: ethereum-pv-claim
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: ethereum-pv-claim
+  name: persistent-ethereum-0
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 128Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ethereum-deploy
-spec:
-  selector:
-    matchLabels:
-      app: ethereum
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: ethereum
-    spec:
-      containers:
-        - name: ethereum
-          image: smartcontract/ethereum
-          args: ["--config", "/devnet/k8s/ropsten.toml"]
-          ports:
-            - containerPort: 8545
-            - containerPort: 8546
-          volumeMounts:
-            - name: ethereum-storage
-              mountPath: /data
-      volumes:
-        - name: ethereum-storage
-          persistentVolumeClaim:
-            claimName: ethereum-pv-claim
