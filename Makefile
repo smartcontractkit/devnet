@@ -8,7 +8,8 @@ build:
 	docker build -t $(REPO) .
 
 run:
-	docker run -p 18545:8545 -p 18546:8546 $(REPO):latest
+	docker run -p 18545:8545 -p 18546:8546 -p 30303:30303 -p 30303:30303/udp \
+		$(REPO):latest --config /devnet/k8s/ropsten.toml
 
 push:
 	docker push $(REPO)

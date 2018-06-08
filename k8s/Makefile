@@ -27,6 +27,7 @@ sshethereum:
 	kubectl exec -it $(POD) -c ethereum -- /bin/bash
 
 info:
+	kubectl config current-context
 	kubectl cluster-info
 	kubectl get no,pvc,pv,svc,deploy,po -o wide
 

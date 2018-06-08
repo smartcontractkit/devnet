@@ -12,6 +12,12 @@ spec:
     - name: ws
       protocol: TCP
       port: 8546
+    - name: listening
+      protocol: TCP
+      port: 30303
+    - name: discovery
+      protocol: UDP
+      port: 30303
   type: LoadBalancer
 ---
 apiVersion: v1
@@ -42,11 +48,17 @@ spec:
     spec:
       containers:
         - name: ethereum
-          image: smartcontract/ethereum
+          image: smartcontract/devnet
           args: ["--config", "/devnet/k8s/ropsten.toml"]
           ports:
             - containerPort: 8545
             - containerPort: 8546
+            - name: listening
+              protocol: TCP
+              containerPort: 30303
+            - name: discovery
+              protocol: UDP
+              containerPort: 30303
           volumeMounts:
             - name: ethereum-storage
               mountPath: /data
