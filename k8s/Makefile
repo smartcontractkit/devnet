@@ -10,12 +10,13 @@ configure:
 	gcloud auth login
 	gcloud config list
 	gcloud container clusters get-credentials $(CLUSTER_NAME)
+	kubectl config current-context
 
 cluster:
 	gcloud container clusters create $(CLUSTER_NAME) \
 		--cluster-version 1.9
 
-testnet:
+apply:
 	kubectl apply -f testnet/ethereum.yaml
 	kubectl apply -f testnet/chainlink.yaml
 
@@ -34,20 +35,13 @@ proxy:
 	open 'http://127.0.0.1:8001/ui'
 	kubectl proxy
 
-rollout:
+patch:
 	-kubectl patch deployment ethereum-deploy -p \
 		$(subst CONTSHA,$(shell ./docker-repodigest ethereum),$(subst CONTNAME,ethereum,$(ROLLOUT_PATCH)))
 	-kubectl patch deployment chainlink-deploy -p \
 		$(subst CONTSHA,$(shell ./docker-repodigest chainlink),$(subst CONTNAME,chainlink,$(ROLLOUT_PATCH)))
 
-rollback:
-	kubectl rollout undo deployment/testnet-deploy
-
-bootstrap-cluster: configure cluster testnet info
-
-delete-testnet:
-	kubectl delete -f testnet/ethereum.yaml
-	kubectl delete -f testnet/chainlink.yaml
+bootstrap-cluster: configure cluster apply info
 
 secrets:
 	kubectl create secret generic cl-environment --from-env-file=.env --dry-run=true -o yaml | kubectl apply -f -
