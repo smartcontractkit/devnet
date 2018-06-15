@@ -24,7 +24,7 @@ PROJECT_ID=your-project-name make bootstrap-cluster
 PROJECT_ID=your-project-name make configure cluster testnet info
 
 # Redeploy after updating images
-make rollout
+make patch
 ```
 
 #### Logs
