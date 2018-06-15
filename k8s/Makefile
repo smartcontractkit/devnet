@@ -1,7 +1,6 @@
 .PHONY: configure cluster testnet ssh info proxy
 .PHONY: rollout rollback bootstrap-cluster delete-testnet
 
-PROJECT_ID=chainlink-testnet
 CLUSTER_NAME=cluster-testnet
 ROLLOUT_PATCH = '{"spec":{"template":{"spec":{"containers":[{"name":"CONTNAME","image":"CONTSHA"}]}}}}'
 
