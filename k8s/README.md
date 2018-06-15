@@ -18,10 +18,10 @@ brew cask install google-cloud-sdk
 brew install kubectl
 
 # Create from scratch
-make bootstrap-cluster
+PROJECT_ID=your-project-name make bootstrap-cluster
 
 # which is the same as
-make configure cluster testnet info
+PROJECT_ID=your-project-name make configure cluster testnet info
 
 # Redeploy after updating images
 make rollout
