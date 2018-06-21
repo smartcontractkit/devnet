@@ -9,6 +9,9 @@ spec:
     - name: cl
       protocol: TCP
       port: 6688
+    - name: gui
+      protocol: TCP
+      port: 6689
   type: LoadBalancer
 ---
 apiVersion: v1
@@ -43,6 +46,7 @@ spec:
           args: ["node", "--password", "$(WALLET_PASSWORD)"]
           ports:
             - containerPort: 6688
+            - containerPort: 6689
           env:
             - name: ROOT
               value: "/data/chainlink"
