@@ -1,5 +1,5 @@
-.PHONY: configure cluster testnet ssh info proxy
-.PHONY: rollout rollback bootstrap-cluster delete-testnet
+.PHONY: configure cluster apply sshchainlink sshethereum info proxy
+.PHONY: patch bootstrap-cluster secrets help
 
 CLUSTER_NAME=cluster-testnet
 ROLLOUT_PATCH = '{"spec":{"template":{"spec":{"containers":[{"name":"CONTNAME","image":"CONTSHA"}]}}}}'
@@ -12,37 +12,43 @@ configure: ## Configure google cloud credentials for PROJECT_ID (must be set)
 	gcloud container clusters get-credentials $(CLUSTER_NAME)
 	kubectl config current-context
 
-cluster:
+cluster: ## Create a google cloud k8s cluster
 	gcloud container clusters create $(CLUSTER_NAME) \
 		--cluster-version 1.9
 
-apply:
+apply: ## Apply k8s configuration changes to cluster
 	kubectl apply -f testnet/ethereum.yaml
 	kubectl apply -f testnet/chainlink.yaml
 
-sshchainlink:
+sshchainlink: ## SSH into the chainlink container at POD env variable
 	kubectl exec -it $(POD) -c chainlink -- /bin/sh
 
-sshethereum:
+sshethereum: ## SSH into the ethereum container at POD env variable
 	kubectl exec -it $(POD) -c ethereum -- /bin/bash
 
-info:
+info: ## Use kubectl to display information about the running cluster
 	kubectl config current-context
 	kubectl cluster-info
 	kubectl get no,pvc,pv,svc,deploy,po -o wide
 
-proxy:
+proxy: ## Open up k8s dashboard by using kubectl to setup a proxy with gcloud
 	open 'http://127.0.0.1:8001/ui'
 	kubectl proxy
 
-patch:
+patch: ## Update the cluster's container SHAs, effectively forcing them to bump to the latest docker image
 	-kubectl patch deployment ethereum-deploy -p \
 		$(subst CONTSHA,$(shell ./docker-repodigest ethereum),$(subst CONTNAME,ethereum,$(ROLLOUT_PATCH)))
 	-kubectl patch deployment chainlink-deploy -p \
 		$(subst CONTSHA,$(shell ./docker-repodigest chainlink),$(subst CONTNAME,chainlink,$(ROLLOUT_PATCH)))
 
-bootstrap-cluster: configure cluster apply info
+bootstrap-cluster: configure cluster apply info ## One command to bootstrap a whole cluster from nothing
 
 secrets: ## Update the cluster's secrets
-	kubectl create secret generic cl-environment --from-env-file=env --dry-run=true -o yaml | kubectl apply -f -
+	kubectl create secret generic cl-environment --from-env-file=.env --dry-run=true -o yaml | kubectl apply -f -
 	kubectl create secret generic cl-password --from-file=.password --dry-run=true -o yaml | kubectl apply -f -
+
+help:
+	@echo ""
+	@echo "Chainlink Testnet Cluster Commands"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
