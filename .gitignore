@@ -2,3 +2,4 @@ data/
 network/
 .python-version
 k8s/.env
+k8s/.password

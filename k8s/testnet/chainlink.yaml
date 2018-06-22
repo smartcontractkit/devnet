@@ -43,7 +43,7 @@ spec:
       containers:
         - name: chainlink
           image: smartcontract/chainlink
-          args: ["node", "--password", "$(WALLET_PASSWORD)"]
+          args: ["node", "--password", "/secrets/.password"]
           ports:
             - containerPort: 6688
             - containerPort: 6689
@@ -58,7 +58,13 @@ spec:
           volumeMounts:
             - name: chainlink-storage
               mountPath: /data
+            - name: chainlink-password
+              mountPath: /secrets
+              readOnly: true
       volumes:
         - name: chainlink-storage
           persistentVolumeClaim:
             claimName: chainlink-pv-claim
+        - name: chainlink-password
+          secret:
+            secretName: cl-password
