@@ -1,3 +1,7 @@
+# ECS DEPRECATED
+
+We now use Kubernetes. This information is out of date.
+
 ## Deploying Testnet
 
 We use AWS ECS to easily bootstrap and deploy a cluster of docker containers
