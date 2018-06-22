@@ -4,7 +4,7 @@
 CLUSTER_NAME=cluster-testnet
 ROLLOUT_PATCH = '{"spec":{"template":{"spec":{"containers":[{"name":"CONTNAME","image":"CONTSHA"}]}}}}'
 
-configure:
+configure: ## Configure google cloud credentials for PROJECT_ID (must be set)
 	gcloud config set project $(PROJECT_ID)
 	gcloud config set compute/zone us-east1-c
 	gcloud auth login
@@ -43,5 +43,6 @@ patch:
 
 bootstrap-cluster: configure cluster apply info
 
-secrets:
-	kubectl create secret generic cl-environment --from-env-file=.env --dry-run=true -o yaml | kubectl apply -f -
+secrets: ## Update the cluster's secrets
+	kubectl create secret generic cl-environment --from-env-file=env --dry-run=true -o yaml | kubectl apply -f -
+	kubectl create secret generic cl-password --from-file=.password --dry-run=true -o yaml | kubectl apply -f -
