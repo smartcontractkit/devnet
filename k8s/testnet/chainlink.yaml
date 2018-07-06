@@ -8,10 +8,8 @@ spec:
   ports:
     - name: cl
       protocol: TCP
-      port: 6688
-    - name: gui
-      protocol: TCP
-      port: 6689
+      port: 80
+      targetPort: 6688
   type: LoadBalancer
 ---
 apiVersion: v1
@@ -46,7 +44,6 @@ spec:
           args: ["node", "--password", "/secrets/.password"]
           ports:
             - containerPort: 6688
-            - containerPort: 6689
           env:
             - name: ROOT
               value: "/data/chainlink"
