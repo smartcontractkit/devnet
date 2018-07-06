@@ -15,9 +15,6 @@ spec:
     - name: listening
       protocol: TCP
       port: 30303
-    - name: discovery
-      protocol: UDP
-      port: 30303
   type: LoadBalancer
 ---
 apiVersion: v1
