@@ -36,3 +36,14 @@ id with `make info` and using the commands below:
 kubectl logs po/testnet-deploy-84c6b4686c-kkp5x chainlink
 kubectl logs po/testnet-deploy-84c6b4686c-kkp5x ethereum
 ```
+
+#### Copying Files
+```
+kubectl cp $POD_ID:data/chainlink/logs.jsonl ./your/local/directory
+```
+
+#### Restarting a Deployment
+```
+kubectl scale --replicas=0 deployment.extensions/ethereum-deploy
+kubectl scale --replicas=1 deployment.extensions/ethereum-deploy
+```
