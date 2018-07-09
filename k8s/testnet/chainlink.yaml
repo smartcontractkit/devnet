@@ -49,6 +49,8 @@ spec:
               value: "/data/chainlink"
             - name: ETH_URL
               value: "ws://ethereum-svc.default.svc.cluster.local:8546"
+            - name: ALLOW_ORIGINS
+              value: "*"
           envFrom:
             - secretRef:
                 name: cl-environment
