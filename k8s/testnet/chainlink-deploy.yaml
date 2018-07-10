@@ -1,28 +1,3 @@
-kind: Service
-apiVersion: v1
-metadata:
-  name: chainlink-svc
-spec:
-  selector:
-    app: chainlink
-  ports:
-    - name: cl
-      protocol: TCP
-      port: 80
-      targetPort: 6688
-  type: LoadBalancer
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: chainlink-pv-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 128Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:

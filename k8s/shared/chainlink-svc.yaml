@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: chainlink-svc
+spec:
+  selector:
+    app: chainlink
+  ports:
+    - name: cl
+      protocol: TCP
+      port: 80
+      targetPort: 6688
+  type: LoadBalancer

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chainlink-deploy
+spec:
+  selector:
+    matchLabels:
+      app: chainlink
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: chainlink
+    spec:
+      containers:
+        - name: chainlink
+          image: smartcontract/chainlink:acceptance
+          args: ["node", "--password", "/secrets/.password"]
+          ports:
+            - containerPort: 6688
+          env:
+            - name: ROOT
+              value: "/data/chainlink"
+            - name: ETH_URL
+              value: "ws://ethereum-svc.default.svc.cluster.local:8546"
+            - name: ALLOW_ORIGINS
+              value: "http://acceptance-node.chain.link"
+          envFrom:
+            - secretRef:
+                name: cl-environment
+          volumeMounts:
+            - name: chainlink-storage
+              mountPath: /data
+            - name: chainlink-password
+              mountPath: /secrets
+              readOnly: true
+      volumes:
+        - name: chainlink-storage
+          persistentVolumeClaim:
+            claimName: chainlink-pv-claim
+        - name: chainlink-password
+          secret:
+            secretName: cl-password
