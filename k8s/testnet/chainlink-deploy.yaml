@@ -26,6 +26,8 @@ spec:
               value: "ws://ethereum-svc.default.svc.cluster.local:8546"
             - name: ALLOW_ORIGINS
               value: "*"
+            - name: CHAINLINK_DEV
+              value: "true"
           envFrom:
             - secretRef:
                 name: cl-environment
