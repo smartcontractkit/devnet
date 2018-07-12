@@ -1,33 +1,3 @@
-kind: Service
-apiVersion: v1
-metadata:
-  name: ethereum-svc
-spec:
-  selector:
-    app: ethereum
-  ports:
-    - name: rpc
-      protocol: TCP
-      port: 8545
-    - name: ws
-      protocol: TCP
-      port: 8546
-    - name: listening
-      protocol: TCP
-      port: 30303
-  type: LoadBalancer
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: ethereum-pv-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 128Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:

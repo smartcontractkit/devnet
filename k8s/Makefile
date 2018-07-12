@@ -1,8 +1,9 @@
 .PHONY: configure cluster apply sshchainlink sshethereum info proxy
 .PHONY: patch bootstrap-cluster secrets help
 
-CLUSTER_NAME=cluster-testnet
-ROLLOUT_PATCH = '{"spec":{"template":{"spec":{"containers":[{"name":"CONTNAME","image":"CONTSHA"}]}}}}'
+DEPLOYMENT ?= testnet
+CLUSTER_NAME := cluster-$(DEPLOYMENT)
+ROLLOUT_PATCH := '{"spec":{"template":{"spec":{"containers":[{"name":"CONTNAME","image":"CONTSHA"}]}}}}'
 
 configure: ## Configure google cloud credentials for PROJECT_ID (must be set)
 	gcloud config set project $(PROJECT_ID)
@@ -17,8 +18,12 @@ cluster: ## Create a google cloud k8s cluster
 		--cluster-version 1.9
 
 apply: ## Apply k8s configuration changes to cluster
-	kubectl apply -f testnet/ethereum.yaml
-	kubectl apply -f testnet/chainlink.yaml
+	kubectl apply -f shared/ethereum-svc.yaml
+	kubectl apply -f shared/ethereum-pv-claim.yaml
+	kubectl apply -f shared/ethereum-deploy.yaml
+	kubectl apply -f shared/chainlink-svc.yaml
+	kubectl apply -f shared/chainlink-pv-claim.yaml
+	kubectl apply -f $(DEPLOYMENT)/chainlink-deploy.yaml
 
 sshchainlink: ## SSH into the chainlink container at POD env variable
 	kubectl exec -it $(POD) -c chainlink -- /bin/sh
@@ -49,6 +54,6 @@ secrets: ## Update the cluster's secrets
 
 help:
 	@echo ""
-	@echo "Chainlink Testnet Cluster Commands"
+	@echo "Chainlink $(DEPLOYMENT) Cluster Commands"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

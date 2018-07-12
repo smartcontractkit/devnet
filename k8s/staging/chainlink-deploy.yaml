@@ -1,28 +1,3 @@
-kind: Service
-apiVersion: v1
-metadata:
-  name: chainlink-svc
-spec:
-  selector:
-    app: chainlink
-  ports:
-    - name: cl
-      protocol: TCP
-      port: 80
-      targetPort: 6688
-  type: LoadBalancer
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: chainlink-pv-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 128Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -40,7 +15,7 @@ spec:
     spec:
       containers:
         - name: chainlink
-          image: smartcontract/chainlink
+          image: smartcontract/chainlink:staging
           args: ["node", "--password", "/secrets/.password"]
           ports:
             - containerPort: 6688
@@ -50,7 +25,9 @@ spec:
             - name: ETH_URL
               value: "ws://ethereum-svc.default.svc.cluster.local:8546"
             - name: ALLOW_ORIGINS
-              value: "*"
+              value: "http://staging-node.chain.link"
+            - name: CHAINLINK_DEV
+              value: "true"
           envFrom:
             - secretRef:
                 name: cl-environment
