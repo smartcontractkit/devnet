@@ -20,7 +20,7 @@ cluster: ## Create a google cloud k8s cluster
 apply: ## Apply k8s configuration changes to cluster
 	kubectl apply -f shared/ethereum-svc.yaml
 	kubectl apply -f shared/ethereum-pv-claim.yaml
-	kubectl apply -f $(DEPLOYMENT)/ethereum-deploy.yaml
+	kubectl apply -f shared/ethereum-deploy.yaml
 	kubectl apply -f shared/chainlink-svc.yaml
 	kubectl apply -f shared/chainlink-pv-claim.yaml
 	kubectl apply -f $(DEPLOYMENT)/chainlink-deploy.yaml
