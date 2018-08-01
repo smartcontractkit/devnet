@@ -3,3 +3,4 @@ network/
 .python-version
 k8s/.env
 k8s/.password
+k8s/.api

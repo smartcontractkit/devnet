@@ -16,7 +16,7 @@ spec:
       containers:
         - name: chainlink
           image: smartcontract/chainlink:staging
-          args: ["node", "--password", "/secrets/.password"]
+          args: ["node", "-p", "/secrets/password/.password", "-a", "/secrets/api/.api"]
           ports:
             - containerPort: 6688
           env:
@@ -25,7 +25,7 @@ spec:
             - name: ETH_URL
               value: "ws://ethereum-svc.default.svc.cluster.local:8546"
             - name: ALLOW_ORIGINS
-              value: "http://staging-node.chain.link"
+              value: "*"
             - name: CHAINLINK_DEV
               value: "true"
           envFrom:
@@ -35,7 +35,10 @@ spec:
             - name: chainlink-storage
               mountPath: /data
             - name: chainlink-password
-              mountPath: /secrets
+              mountPath: /secrets/password
+              readOnly: true
+            - name: chainlink-api
+              mountPath: /secrets/api
               readOnly: true
       volumes:
         - name: chainlink-storage
@@ -44,3 +47,6 @@ spec:
         - name: chainlink-password
           secret:
             secretName: cl-password
+        - name: chainlink-api
+          secret:
+            secretName: cl-api

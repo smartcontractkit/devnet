@@ -2,12 +2,14 @@
 .PHONY: patch bootstrap-cluster secrets help
 
 DEPLOYMENT ?= testnet
-CLUSTER_NAME := cluster-$(DEPLOYMENT)
+CLUSTER_NAME := $(DEPLOYMENT)
 ROLLOUT_PATCH := '{"spec":{"template":{"spec":{"containers":[{"name":"CONTNAME","image":"CONTSHA"}]}}}}'
+CHAINLINK_IMAGE ?= smartcontract/chainlink:latest
+ETHEREUM_IMAGE ?= smartcontract/devnet:latest
 
 configure: ## Configure google cloud credentials for PROJECT_ID (must be set)
 	gcloud config set project $(PROJECT_ID)
-	gcloud config set compute/zone us-east1-c
+	gcloud config set compute/zone us-central1-a
 	gcloud auth login
 	gcloud config list
 	gcloud container clusters get-credentials $(CLUSTER_NAME)
@@ -20,7 +22,7 @@ cluster: ## Create a google cloud k8s cluster
 apply: ## Apply k8s configuration changes to cluster
 	kubectl apply -f shared/ethereum-svc.yaml
 	kubectl apply -f shared/ethereum-pv-claim.yaml
-	kubectl apply -f shared/ethereum-deploy.yaml
+	kubectl apply -f $(DEPLOYMENT)/ethereum-deploy.yaml
 	kubectl apply -f shared/chainlink-svc.yaml
 	kubectl apply -f shared/chainlink-pv-claim.yaml
 	kubectl apply -f $(DEPLOYMENT)/chainlink-deploy.yaml
@@ -42,15 +44,16 @@ proxy: ## Open up k8s dashboard by using kubectl to setup a proxy with gcloud
 
 patch: ## Update the cluster's container SHAs, effectively forcing them to bump to the latest docker image
 	-kubectl patch deployment ethereum-deploy -p \
-		$(subst CONTSHA,$(shell ./docker-repodigest ethereum),$(subst CONTNAME,ethereum,$(ROLLOUT_PATCH)))
+		$(subst CONTSHA,$(shell ./docker-repodigest $(ETHEREUM_IMAGE)),$(subst CONTNAME,ethereum,$(ROLLOUT_PATCH)))
 	-kubectl patch deployment chainlink-deploy -p \
-		$(subst CONTSHA,$(shell ./docker-repodigest chainlink),$(subst CONTNAME,chainlink,$(ROLLOUT_PATCH)))
+		$(subst CONTSHA,$(shell ./docker-repodigest $(CHAINLINK_IMAGE)),$(subst CONTNAME,chainlink,$(ROLLOUT_PATCH)))
 
 bootstrap-cluster: configure cluster apply info ## One command to bootstrap a whole cluster from nothing
 
 secrets: ## Update the cluster's secrets
 	kubectl create secret generic cl-environment --from-env-file=.env --dry-run=true -o yaml | kubectl apply -f -
 	kubectl create secret generic cl-password --from-file=.password --dry-run=true -o yaml | kubectl apply -f -
+	kubectl create secret generic cl-api --from-file=.api --dry-run=true -o yaml | kubectl apply -f -
 
 help:
 	@echo ""
