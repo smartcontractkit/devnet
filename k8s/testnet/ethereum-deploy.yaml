@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ethereum-deploy
+spec:
+  selector:
+    matchLabels:
+      app: ethereum
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: ethereum
+    spec:
+      containers:
+        - name: ethereum
+          image: ethereum/client-go:latest
+          args: ["--testnet", "--ws", "--wsport", "8546", "--wsaddr", "0.0.0.0", "--wsorigins", "*", "--rpc", "--rpcport", "8545", "--rpcaddr", "0.0.0.0", "--rpccorsdomain", "*", "--datadir", "/data/ethereum", "--ipcdisable", "--light"]
+          ports:
+            - containerPort: 8545
+            - containerPort: 8546
+            - name: listening
+              protocol: TCP
+              containerPort: 30303
+            - name: discovery
+              protocol: UDP
+              containerPort: 30303
+          volumeMounts:
+            - name: ethereum-storage
+              mountPath: /data
+      volumes:
+        - name: ethereum-storage
+          persistentVolumeClaim:
+            claimName: ethereum-pv-claim
