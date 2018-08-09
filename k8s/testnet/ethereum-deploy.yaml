@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: ethereum
-          image: smartcontract/devnet
-          args: ["--config", "/devnet/k8s/ropsten.toml"]
+          image: ethereum/client-go:latest
+          args: ["--testnet", "--ws", "--wsport", "8546", "--wsaddr", "0.0.0.0", "--wsorigins", "*", "--rpc", "--rpcport", "8545", "--rpcaddr", "0.0.0.0", "--rpccorsdomain", "*", "--datadir", "/data/ethereum", "--ipcdisable", "--light"]
           ports:
             - containerPort: 8545
             - containerPort: 8546
