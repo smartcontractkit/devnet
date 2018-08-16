@@ -55,10 +55,11 @@ secrets: ## Update the cluster's secrets. Must have a populated secrets/ folder
 	kubectl create secret generic cl-environment --from-env-file=secrets/env --dry-run=true -o yaml | kubectl apply -f -
 	kubectl create secret generic cl-password --from-file=secrets/password --dry-run=true -o yaml | kubectl apply -f -
 	kubectl create secret generic cl-api --from-file=secrets/api --dry-run=true -o yaml | kubectl apply -f -
+	-kubectl delete secret cl-sslcert
 	-kubectl create secret tls cl-sslcert --cert=secrets/server.crt --key=secrets/server.key
 
 certificate-openssl: ## Generates a self signed certificate with openssl to tmp/
-	./generate-self-signed-cert
+	./generate-openssl-cert
 
 certificate-letsencrypt: ## Uses certbot to manually generate a certificate with Let's Encrypt at DOMAIN
 	./generate-letsencrypt-cert
