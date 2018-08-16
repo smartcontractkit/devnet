@@ -4,3 +4,9 @@ network/
 k8s/.env
 k8s/.password
 k8s/.api
+k8s/secrets/env
+k8s/secrets/password
+k8s/secrets/api
+k8s/secrets/*.csr
+k8s/secrets/*.crt
+k8s/secrets/*.key
