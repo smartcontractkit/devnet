@@ -17,7 +17,7 @@ configure: ## Configure google cloud credentials for PROJECT_ID (must be set)
 
 cluster: ## Create a google cloud k8s cluster
 	gcloud container clusters create $(CLUSTER_NAME) \
-		--cluster-version 1.9
+		--cluster-version 1.10
 
 apply: ## Apply k8s configuration changes to cluster
 	kubectl apply -f shared/ethereum-svc.yaml
@@ -26,6 +26,7 @@ apply: ## Apply k8s configuration changes to cluster
 	kubectl apply -f shared/chainlink-svc.yaml
 	kubectl apply -f shared/chainlink-pv-claim.yaml
 	kubectl apply -f $(DEPLOYMENT)/chainlink-deploy.yaml
+	kubectl apply -f shared/ingress.yaml
 
 sshchainlink: ## SSH into the chainlink container at POD env variable
 	kubectl exec -it $(POD) -c chainlink -- /bin/sh
@@ -36,7 +37,7 @@ sshethereum: ## SSH into the ethereum container at POD env variable
 info: ## Use kubectl to display information about the running cluster
 	kubectl config current-context
 	kubectl cluster-info
-	kubectl get no,pvc,pv,svc,deploy,po -o wide
+	kubectl get secrets,pvc,pv,nodes,ingress,svc,deploy,po -o wide
 
 proxy: ## Open up k8s dashboard by using kubectl to setup a proxy with gcloud
 	open 'http://127.0.0.1:8001/ui'
@@ -48,7 +49,7 @@ patch: ## Update the cluster's container SHAs, effectively forcing them to bump 
 	-kubectl patch deployment chainlink-deploy -p \
 		$(subst CONTSHA,$(shell ./docker-repodigest $(CHAINLINK_IMAGE)),$(subst CONTNAME,chainlink,$(ROLLOUT_PATCH)))
 
-bootstrap-cluster: configure cluster apply info ## One command to bootstrap a whole cluster from nothing
+bootstrap-cluster: configure cluster secrets apply info ## One command to bootstrap a whole cluster from nothing. Make sure dotfiles are in place for secrets.
 
 secrets: ## Update the cluster's secrets
 	kubectl create secret generic cl-environment --from-env-file=.env --dry-run=true -o yaml | kubectl apply -f -

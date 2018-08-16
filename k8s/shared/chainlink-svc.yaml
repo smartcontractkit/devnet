@@ -6,8 +6,8 @@ spec:
   selector:
     app: chainlink
   ports:
-    - name: cl
+    - name: http
       protocol: TCP
       port: 80
       targetPort: 6688
-  type: LoadBalancer
+  type: NodePort
