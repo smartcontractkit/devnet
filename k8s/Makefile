@@ -51,12 +51,12 @@ patch: ## Update the cluster's container SHAs, effectively forcing them to bump 
 
 bootstrap-cluster: configure cluster secrets apply info ## One command to bootstrap a whole cluster from nothing. Make sure dotfiles are in place for secrets.
 
-secrets: ## Update the cluster's secrets. Must have a populated secrets/ folder
-	kubectl create secret generic cl-environment --from-env-file=secrets/env --dry-run=true -o yaml | kubectl apply -f -
-	kubectl create secret generic cl-password --from-file=secrets/password --dry-run=true -o yaml | kubectl apply -f -
-	kubectl create secret generic cl-api --from-file=secrets/api --dry-run=true -o yaml | kubectl apply -f -
+secrets: ## Update the cluster's secrets. Must have a populated secrets/ folder with ENVIRONMENT.* files. i.e. secrets/staging.env
+	kubectl create secret generic cl-environment --from-env-file=secrets/$(DEPLOYMENT).env --dry-run=true -o yaml | kubectl apply -f -
+	kubectl create secret generic cl-password --from-file=password=secrets/$(DEPLOYMENT).password --dry-run=true -o yaml | kubectl apply -f -
+	kubectl create secret generic cl-api --from-file=api=secrets/$(DEPLOYMENT).api --dry-run=true -o yaml | kubectl apply -f -
 	-kubectl delete secret cl-sslcert
-	-kubectl create secret tls cl-sslcert --cert=secrets/server.crt --key=secrets/server.key
+	-kubectl create secret tls cl-sslcert --cert=secrets/$(DEPLOYMENT).crt --key=secrets/$(DEPLOYMENT).key
 
 certificate-openssl: ## Generates a self signed certificate with openssl to tmp/
 	./generate-openssl-cert
