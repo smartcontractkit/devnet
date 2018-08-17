@@ -16,7 +16,7 @@ spec:
       containers:
         - name: chainlink
           image: smartcontract/chainlink:staging
-          args: ["node", "-p", "/secrets/password/.password", "-a", "/secrets/api/.api"]
+          args: ["node", "-p", "/secrets/password", "-a", "/secrets/api"]
           ports:
             - containerPort: 6688
           env:
@@ -35,10 +35,10 @@ spec:
             - name: chainlink-storage
               mountPath: /data
             - name: chainlink-password
-              mountPath: /secrets/password
+              mountPath: /secrets
               readOnly: true
             - name: chainlink-api
-              mountPath: /secrets/api
+              mountPath: /secrets
               readOnly: true
       volumes:
         - name: chainlink-storage
