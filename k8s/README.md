@@ -1,7 +1,14 @@
-## Deploying Testnet to GCP
+## Deploying to GCP
 
-We use Google Cloud Platform's Kubernetes Engine (GKE) to easily bootstrap
-and deploy Parity against Ropsten with an attached Chainlink node.
+Kubernetes configurations for deploying chainlink and geth to Google Cloud
+Platform.
+
+Chainlink is configured for deployments acceptance and staging (as described in
+https://en.wikipedia.org/wiki/Deployment_environment).
+
+Geth is deployed to chains ropsten and rinkby
+(as documented here: https://ethereum.stackexchange.com/questions/17051/how-to-select-a-network-id-or-is-there-a-list-of-network-ids/17101#17101)
+
 
 #### Requirements:
 

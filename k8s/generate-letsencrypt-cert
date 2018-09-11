@@ -1,5 +1,0 @@
-#!/bin/bash
-
-mkdir -p certbot
-read -p 'Please enter the domain (e.g. www.example.com): ' DOMAIN
-certbot -c certbot.ini -d $DOMAIN --manual --preferred-challenges dns certonly
