@@ -1,5 +1,44 @@
-apiVersion: apps/v1
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: chainlink-ingress
+  annotations:
+    kubernetes.io/ingress.allow-http: "false"
+spec:
+  tls:
+  - secretName: cl-sslcert
+  backend:
+    serviceName: chainlink-svc
+    servicePort: 80
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: chainlink-svc
+spec:
+  selector:
+    app: chainlink
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 6688
+  type: NodePort
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: chainlink-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 128Gi
+---
 kind: Deployment
+apiVersion: apps/v1
 metadata:
   name: chainlink-deploy
 spec:
@@ -16,14 +55,14 @@ spec:
       containers:
         - name: chainlink
           image: smartcontract/chainlink:latest
-          args: ["node", "-p", "/secrets/password", "-a", "/secrets/api"]
+          args: ["node", "-p", "/secrets/password/password", "-a", "/secrets/api/api"]
           ports:
             - containerPort: 6688
           env:
             - name: ROOT
               value: "/data/chainlink"
             - name: ETH_URL
-              value: "ws://ethereum-svc.default.svc.cluster.local:8546"
+              value: "ws://ropsten.geth.chain.link:8546"
             - name: ALLOW_ORIGINS
               value: "*"
             - name: CHAINLINK_DEV
@@ -35,10 +74,10 @@ spec:
             - name: chainlink-storage
               mountPath: /data
             - name: chainlink-password
-              mountPath: /secrets
+              mountPath: /secrets/password
               readOnly: true
             - name: chainlink-api
-              mountPath: /secrets
+              mountPath: /secrets/api
               readOnly: true
       volumes:
         - name: chainlink-storage

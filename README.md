@@ -1,5 +1,6 @@
 # DevNet
-Configuration for a light Ethereum network to develop and test against.
+
+Automation for chainlink and ethereum developer nodes.
 
 Provides funding for accounts used in various Smart Contract Kit test suites.
 
@@ -8,6 +9,7 @@ Provides funding for accounts used in various Smart Contract Kit test suites.
 - [Docker](https://www.docker.com/)
 
 ## Install
+
 ```
 docker pull smartcontract/devnet
 ```
