@@ -1,4 +1,4 @@
-# Inf
+# Infrastructure
 
 Automation for Smart Contract's infrastructure and software.
 
