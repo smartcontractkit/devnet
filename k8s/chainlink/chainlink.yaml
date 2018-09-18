@@ -1,22 +1,10 @@
 ---
-kind: Ingress
-apiVersion: extensions/v1beta1
-metadata:
-  name: chainlink-ingress
-  annotations:
-    kubernetes.io/ingress.allow-http: "false"
-spec:
-  tls:
-  - secretName: cl-sslcert
-  backend:
-    serviceName: chainlink-svc
-    servicePort: 80
----
 kind: Service
 apiVersion: v1
 metadata:
   name: chainlink-svc
 spec:
+  type: LoadBalancer
   selector:
     app: chainlink
   ports:
@@ -24,18 +12,10 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 6688
-  type: NodePort
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: chainlink-pv-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 128Gi
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 6689
 ---
 kind: Deployment
 apiVersion: apps/v1
@@ -58,15 +38,26 @@ spec:
           args: ["node", "-p", "/secrets/password/password", "-a", "/secrets/api/api"]
           ports:
             - containerPort: 6688
+            - containerPort: 6689
           env:
             - name: ROOT
               value: "/data/chainlink"
             - name: ETH_URL
-              value: "ws://ropsten.geth.chain.link:8546"
+              valueFrom:
+               configMapKeyRef:
+                 name: chainlink-cfg
+                 key: ETH_URL
             - name: ALLOW_ORIGINS
               value: "*"
-            - name: CHAINLINK_DEV
-              value: "true"
+            - name: CHAINLINK_TLS_HOST
+              valueFrom:
+               configMapKeyRef:
+                 name: chainlink-cfg
+                 key: CHAINLINK_TLS_HOST
+            - name: TLS_CERT_PATH
+              value: /secrets/tls/tls.crt
+            - name: TLS_KEY_PATH
+              value: /secrets/tls/tls.key
           envFrom:
             - secretRef:
                 name: cl-environment
@@ -79,6 +70,9 @@ spec:
             - name: chainlink-api
               mountPath: /secrets/api
               readOnly: true
+            - name: chainlink-crt
+              mountPath: /secrets/tls
+              readOnly: true
       volumes:
         - name: chainlink-storage
           persistentVolumeClaim:
@@ -89,3 +83,17 @@ spec:
         - name: chainlink-api
           secret:
             secretName: cl-api
+        - name: chainlink-crt
+          secret:
+            secretName: cl-sslcert
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: chainlink-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 128Gi
