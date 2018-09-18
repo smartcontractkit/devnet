@@ -27,7 +27,3 @@ This also maps the host machine's ports 18545 and 18546 to the container's ports
 ```
 docker run -p 18545:8545 -p 18546:8546 smartcontract/devnet:latest --config /devnet/testnet.toml
 ```
-
-## Deployment
-
-See the `k8s` or `ecs` folder.
