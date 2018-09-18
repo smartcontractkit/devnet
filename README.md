@@ -1,33 +1,14 @@
-# DevNet
+# Inf
 
-Automation for chainlink and ethereum developer nodes.
+Automation for Smart Contract's infrastructure and software.
 
-Provides funding for accounts used in various Smart Contract Kit test suites.
+  * image - [Docker](https://www.docker.com/) image for chainlink
+  * k8s - [Kubernetes](https://kubernetes.io/) configurations for chainlink
 
-## Requirements
+## Contributing
 
-- [Docker](https://www.docker.com/)
+This project's source code is [licensed under the MIT License](https://github.com/smartcontractkit/chainlink/blob/master/LICENSE), and contributions are welcome.
 
-## Install
+Please check out our [contributing guidelines](./docs/CONTRIBUTING.md) for more details.
 
-```
-docker pull smartcontract/devnet
-```
-
-## Run
-
-```
-docker run smartcontract/devnet
-```
-
-## Run Against Ropsten
-
-This also maps the host machine's ports 18545 and 18546 to the container's ports 8545 and 8546 respectively.
-
-```
-docker run -p 18545:8545 -p 18546:8546 smartcontract/devnet:latest --config /devnet/testnet.toml
-```
-
-## Deployment
-
-See the `k8s` or `ecs` folder.
+Thank you!
