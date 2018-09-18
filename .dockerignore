@@ -1,3 +1,4 @@
 data/
 tmp/
 k8s/tmp
+k8s/chainlink/secrets

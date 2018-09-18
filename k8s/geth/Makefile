@@ -16,4 +16,4 @@ ssh: ## SSH into the ethereum container at POD env variable
 .PHONY: patch
 patch: ## Update the cluster's container SHAs, effectively forcing them to bump to the latest docker image
 	-kubectl patch deployment ethereum-deploy -p \
-		$(subst CONTSHA,$(shell ./docker-repodigest $(ETHEREUM_IMAGE)),$(subst CONTNAME,ethereum,$(ROLLOUT_PATCH)))
+		$(subst CONTSHA,$(shell ../docker-repodigest $(ETHEREUM_IMAGE)),$(subst CONTNAME,ethereum,$(ROLLOUT_PATCH)))
