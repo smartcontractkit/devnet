@@ -23,6 +23,11 @@ patch: ## Update the cluster's container SHAs, effectively forcing them to bump 
 	-kubectl patch deployment chainlink-deploy -p \
 		$(subst CONTSHA,$(shell ../docker-repodigest $(CHAINLINK_IMAGE)),$(subst CONTNAME,chainlink,$(ROLLOUT_PATCH)))
 
+.PHONY: configmap
+configmap: config/$(DEPLOYMENT).env
+	kubectl delete configmap chainlink-cfg --ignore-not-found=true
+	kubectl create configmap chainlink-cfg --from-env-file=$<
+
 .PHONY: secrets
 secrets: $(CERT) $(KEY) ## Update the cluster's secrets. Must have a populated secrets/ folder with ENVIRONMENT.* files. i.e. secrets/staging.env
 	kubectl create secret generic cl-environment --from-env-file=secrets/$(DEPLOYMENT).env --dry-run=true -o yaml | kubectl apply -f -
@@ -38,3 +43,7 @@ ifneq ($(LETSENCRYPT),yes)
 else
 	certbot -c certbot.ini -d $$DOMAIN --manual --preferred-challenges dns certonly
 endif
+
+config/$(DEPLOYMENT).env:
+	@echo You must create a $@ file before continuing.
+	@exit 1

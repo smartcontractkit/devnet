@@ -1,10 +1,11 @@
 .env
 .password
 .api
-secrets/*.env
-secrets/*.password
-secrets/*.api
-secrets/*.csr
-secrets/*.crt
-secrets/*.key
+
+**/secrets/*
+!**/secrets/example.*
+
+**/config/*
+!**/config/example.*
+
 certbot/

@@ -43,9 +43,17 @@ spec:
             - name: ROOT
               value: "/data/chainlink"
             - name: ETH_URL
-              value: "ws://ropsten.geth.chain.link:8546"
+              valueFrom:
+               configMapKeyRef:
+                 name: chainlink-cfg
+                 key: ETH_URL
             - name: ALLOW_ORIGINS
               value: "*"
+            - name: CHAINLINK_TLS_HOST
+              valueFrom:
+               configMapKeyRef:
+                 name: chainlink-cfg
+                 key: CHAINLINK_TLS_HOST
             - name: TLS_CERT_PATH
               value: /secrets/tls/tls.crt
             - name: TLS_KEY_PATH
