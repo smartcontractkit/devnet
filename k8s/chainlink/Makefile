@@ -21,7 +21,7 @@ ssh: ## SSH into the chainlink container.
 .PHONY: patch
 patch: ## Update the cluster's container SHAs, effectively forcing them to bump to the latest docker image
 	-kubectl patch deployment chainlink-deploy -p \
-		$(subst CONTSHA,$(shell ./docker-repodigest $(CHAINLINK_IMAGE)),$(subst CONTNAME,chainlink,$(ROLLOUT_PATCH)))
+		$(subst CONTSHA,$(shell ../docker-repodigest $(CHAINLINK_IMAGE)),$(subst CONTNAME,chainlink,$(ROLLOUT_PATCH)))
 
 .PHONY: secrets
 secrets: $(CERT) $(KEY) ## Update the cluster's secrets. Must have a populated secrets/ folder with ENVIRONMENT.* files. i.e. secrets/staging.env
