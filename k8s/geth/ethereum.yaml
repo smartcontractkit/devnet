@@ -1,0 +1,72 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ethereum-svc
+spec:
+  selector:
+    app: ethereum
+  ports:
+    - name: rpc
+      protocol: TCP
+      port: 8545
+    - name: ws
+      protocol: TCP
+      port: 8546
+    - name: listening
+      protocol: TCP
+      port: 30303
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ethereum-deploy
+spec:
+  selector:
+    matchLabels:
+      app: ethereum
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: ethereum
+    spec:
+      containers:
+        - name: ethereum
+          image: ethereum/client-go:latest
+          args: ["--networkid", "$(NETWORK_ID)", "--ws", "--wsport", "8546", "--wsaddr", "0.0.0.0", "--wsorigins", "*", "--rpc", "--rpcport", "8545", "--rpcaddr", "0.0.0.0", "--rpccorsdomain", "*", "--datadir", "/data/ethereum", "--ipcdisable"]
+          ports:
+            - containerPort: 8545
+            - containerPort: 8546
+            - name: listening
+              protocol: TCP
+              containerPort: 30303
+            - name: discovery
+              protocol: UDP
+              containerPort: 30303
+          env:
+            - name: NETWORK_ID
+              valueFrom:
+               configMapKeyRef:
+                 name: ethereum-cfg
+                 key: NETWORK_ID
+          volumeMounts:
+            - name: ethereum-storage
+              mountPath: /data
+      volumes:
+        - name: ethereum-storage
+          persistentVolumeClaim:
+            claimName: ethereum-pv-claim
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ethereum-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 128Gi
