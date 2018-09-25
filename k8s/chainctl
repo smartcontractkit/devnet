@@ -175,7 +175,7 @@ duplicate_file_format_guard() {
   file="$1"
   type="${file##*.}"
   basename="$(basename "$file" "$type")"
-  existing_files=$(find . -maxdepth 1 -iname "$basename*")
+  existing_files=$(find . -maxdepth 1 -iname "$basename*" ! -name $file)
   if [ $(echo $existing_files | wc -w) -ge 1 ]; then
     printf "Error: refusing to pull file $file.\n"
     printf "\nThe following files already exist:\n\n$existing_files\n\n"
