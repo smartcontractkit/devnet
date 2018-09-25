@@ -43,7 +43,7 @@ create_gcloud_config() {
 
 select_gcloud_config() {
   if [ "$ACTIVE_GCLOUD_CONFIG" != "$GCLOUD_CONFIG" ]; then
-    if $(gcloud config configurations list | grep "$GCLOUD_CONFIG"); then
+    if gcloud config configurations list | grep -q "$GCLOUD_CONFIG"; then
       gcloud config configurations activate "$GCLOUD_CONFIG"
     else
       create_gcloud_config
