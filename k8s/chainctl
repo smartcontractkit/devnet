@@ -95,8 +95,8 @@ replace-configmaps() {
   printf "\033[37m%-30s%-30s%s\033[0m\n" Name Type Progress
 
   for file in $(find . -maxdepth 1 -iname '*.configmap.*'); do
-    local name="$(echo $file | awk -F. '{print$1}')"
     local type="${file##*.}"
+    local name="$(basename "$file" ".$type")"
 
     printf "%-30s%-30s" $name $type
 
@@ -122,8 +122,8 @@ replace-secrets() {
   printf "\033[37m%-30s%-30s%s\033[0m\n" Name Type Progress
 
   for file in $(find . -maxdepth 1 -iname  '*.secret.*'); do
-    local name="$(echo $file | awk -F. '{print$1}')"
     local type="${file##*.}"
+    local name="$(basename "$file" ".$type")"
 
     printf "%-30s%-30s" $name $type
 
@@ -288,6 +288,10 @@ case "$1" in
     ;;
 
   certificates)
+    if [ -z "$DOMAIN" ]; then
+      printf "Error: you must define DOMAIN in your chainctl.env.\n\n"
+      exit 1
+    fi
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout sslcert.key \
       -out sslcert.crt -subj "/OU=chainlink.development/CN=$DOMAIN/O=$DOMAIN"
     ;;
