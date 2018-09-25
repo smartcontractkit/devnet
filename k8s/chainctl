@@ -96,7 +96,7 @@ replace-configmaps() {
 
   for file in $(find . -maxdepth 1 -iname '*.configmap.*'); do
     local type="${file##*.}"
-    local name="$(basename "$file" ".$type")"
+    local name="$(basename "$file" ".configmap.$type")"
 
     printf "%-30s%-30s" $name $type
 
@@ -123,7 +123,7 @@ replace-secrets() {
 
   for file in $(find . -maxdepth 1 -iname  '*.secret.*'); do
     local type="${file##*.}"
-    local name="$(basename "$file" ".$type")"
+    local name="$(basename "$file" ".secret.$type")"
 
     printf "%-30s%-30s" $name $type
 
