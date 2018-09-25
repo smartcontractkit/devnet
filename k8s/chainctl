@@ -95,10 +95,12 @@ replace-configmaps() {
   printf "\033[37m%-30s%-30s%s\033[0m\n" Name Type Progress
 
   for file in $(find . -maxdepth 1 -iname '*.configmap.*'); do
-    name="$(echo $file | awk -F. '{print$1}')"
-    type="${file##*.}"
+    local name="$(echo $file | awk -F. '{print$1}')"
+    local type="${file##*.}"
 
     printf "%-30s%-30s" $name $type
+
+    ambiguous_file_guard $file
 
     kubectl delete configmap $name --ignore-not-found=true >/dev/null
     case "$type" in
@@ -120,14 +122,16 @@ replace-secrets() {
   printf "\033[37m%-30s%-30s%s\033[0m\n" Name Type Progress
 
   for file in $(find . -maxdepth 1 -iname  '*.secret.*'); do
-    name="$(echo $file | awk -F. '{print$1}')"
-    type="${file##*.}"
+    local name="$(echo $file | awk -F. '{print$1}')"
+    local type="${file##*.}"
 
     printf "%-30s%-30s" $name $type
 
+    ambiguous_file_guard $file
+
     case "$type" in
       yaml)
-        kubectl apply -f $file --dry-run=true
+        kubectl apply -f $file
         ;;
 
       env)
@@ -140,7 +144,7 @@ replace-secrets() {
           exit 2
         fi
         kubectl delete secret $name --ignore-not-found=true > /dev/null
-        kubectl create secret tls $name --cert=$file --key=$name.secret.key --dry-run=true
+        kubectl create secret tls $name --cert=$file --key=$name.secret.key
         ;;
 
       key)
@@ -167,19 +171,37 @@ apply() {
 }
 
 kubectl_fmt() {
-  spacing="$(printf '%30s' ' ')"
+  local spacing="$(printf '%30s' ' ')"
   cat | sed '2,$s/^/$spacing/'
 }
 
-duplicate_file_format_guard() {
-  file="$1"
-  type="${file##*.}"
-  basename="$(basename "$file" "$type")"
-  existing_files=$(find . -maxdepth 1 -iname "$basename*" ! -name $file)
+files_with_same_basename() {
+  # use basename here to remove any path parts that could confuse find
+  local file=$(basename "$1")
+  local type="${file##*.}"
+  local basename="$(basename "$file" "$type")"
+  find . -maxdepth 1 -iname "$basename*" -not -name $file
+}
+
+ambiguous_file_guard() {
+  local file="$1"
+  local other_files=$(files_with_same_basename $file)
+  if [ $(echo $other_files | wc -w) -ge 1 ]; then
+    printf "Error: refusing to push file $file.\n"
+    printf "\nThe following file(s) also exist:\n\n$other_files\n\n"
+    printf "The presence of multiple files with the same basename creates an ambiguity.\n"
+    printf "Please reconcile this issue before continuing.\n"
+    exit 1
+  fi
+}
+
+duplicate_file_guard() {
+  local file="$1"
+  local existing_files=$(files_with_same_basename $file)
   if [ $(echo $existing_files | wc -w) -ge 1 ]; then
     printf "Error: refusing to pull file $file.\n"
-    printf "\nThe following files already exist:\n\n$existing_files\n\n"
-    printf "Creating the file $file would create an ambiguity when pushing, move these files out of the way first.\n"
+    printf "\nThe following file(s) already exist:\n\n$existing_files\n\n"
+    printf "Creating the file $file would create an ambiguity, move these files out of the way first.\n"
     exit 1
   fi
 }
@@ -199,7 +221,7 @@ case "$1" in
     printf "\033[37m%-30s%s\033[0m\n" Name Progress
     for name in $(kubectl get configmaps --no-headers | awk '{print$1}'); do
       printf "%-30s" $name
-      duplicate_file_format_guard $name.configmap.yaml
+      duplicate_file_guard $name.configmap.yaml
       kubectl get configmaps $name -o yaml > $name.configmap.yaml
       printf "\033[35m%s\033[0m\n" "$name.configmap.yaml"
     done
@@ -219,7 +241,7 @@ case "$1" in
     printf "\033[37m%-30s%s\033[0m\n" Name Progress
     for name in $(kubectl get secrets --no-headers | awk '{print$1}'); do
       printf "%-30s" $name
-      duplicate_file_format_guard $name.secret.yaml
+      duplicate_file_guard $name.secret.yaml
       kubectl get secrets $name -o yaml > $name.secret.yaml
       printf "\033[35m%s\033[0m\n" "$name.secret.yaml"
     done
