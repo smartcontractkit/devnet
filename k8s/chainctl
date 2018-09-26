@@ -268,7 +268,7 @@ case "$1" in
     select-cluster
     banner
     kubectl cluster-info
-    kubectl get secrets,pvc,pv,nodes,ingress,svc,deploy,po -o wide
+    kubectl get secrets,configmaps,pvc,pv,nodes,ingress,svc,deploy,po -o wide
     ;;
 
   bootstrap-cluster)
