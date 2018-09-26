@@ -2,6 +2,8 @@
 
 set -e
 
+ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
 # This command should be executed from within a deployment directory, which is
 # named after the $PROJECT_ID followed by a period, then the $CLUSTER_NAME.
 #
@@ -166,13 +168,13 @@ apply() {
   printf "\033[37m%-30s%-30s%s\033[0m\n" Template Progress
   for template in $TEMPLATES; do
     printf "%-30s" $template
-    kubectl apply -f ../../templates/$template.yaml | kubectl_fmt
+    kubectl apply -f "$ROOTDIR/templates/$template.yaml" | kubectl_fmt
   done
 }
 
 kubectl_fmt() {
   local spacing="$(printf '%30s' ' ')"
-  cat | sed '2,$s/^/$spacing/'
+  cat | sed "2,\$s/^/$spacing/"
 }
 
 files_with_same_basename() {
