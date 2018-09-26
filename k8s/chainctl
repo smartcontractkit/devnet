@@ -72,10 +72,10 @@ usage() {
   printf "Usage: chainctl <command>\n\n"
   printf "\033[37m%-30s %s\033[0m\n" Command Description
 
-  printf "\033[36m%-30s\033[0m %s\n" configmaps "Recreate the configuration map for this cluster"
+  printf "\033[36m%-30s\033[0m %s\n" replace-configmaps "Recreate the configuration map for this cluster"
   printf "\033[36m%-30s\033[0m %s\n" pull-configmaps "Retrieve all configuration maps for this cluster as yaml files."
 
-  printf "\033[36m%-30s\033[0m %s\n" secrets "Recreate the secrets for this cluster"
+  printf "\033[36m%-30s\033[0m %s\n" replace-secrets "Recreate the secrets for this cluster"
   printf "\033[36m%-30s\033[0m %s\n" pull-secrets "Retrieve all secrets for this cluster as yaml files."
 
   printf "\033[36m%-30s\033[0m %s\n" apply "Apply the k8s configuration templates as specified by TEMPLATES."
@@ -207,7 +207,7 @@ duplicate_file_guard() {
 }
 
 case "$1" in
-  configmaps)
+  replace-configmaps)
     select_gcloud_config
     select-cluster
     banner
@@ -227,7 +227,7 @@ case "$1" in
     done
     ;;
 
-  secrets)
+  replace-secrets)
     select_gcloud_config
     select-cluster
     banner
