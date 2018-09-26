@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [ -z $1 ] ; then
-  echo "Image parameter needed!" && exit 1;
-fi
-
-imageid=`docker images -f "reference=$1" | tail -n1 | awk '{ print $3; }'`
-dirtydigest=`docker inspect --format='{{.RepoDigests}}' $imageid`
-echo $dirtydigest | sed 's/^\[\(.*\)\]$/\1/'
