@@ -1,0 +1,325 @@
+#!/usr/bin/env bash
+
+set -e
+
+ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
+# This command should be executed from within a deployment directory, which is
+# named after the $PROJECT_ID followed by a period, then the $CLUSTER_NAME.
+#
+# Alternatively you can override these with environment variables.
+if [ -z "$PROJECT_ID" ]; then
+  PROJECT_ID="$(echo $PWD | awk -F/ '{print$(NF-1)}')"
+fi
+if [ -z "$CLUSTER_NAME" ]; then
+  CLUSTER_NAME="$(echo $PWD | awk -F/ '{print$(NF-0)}')"
+fi
+
+if [ -z "$PROJECT_ID" ] || [ -z "$CLUSTER_NAME" ]; then
+  printf "Error: could not determine PROJECT_ID and CLUSTER_NAME."
+  exit 1
+fi
+
+# Use a local workspace kubeconfig rather than a global one
+export KUBECONFIG=$PWD/.kube/config
+
+# Create a gcloud config for this workspace
+GCLOUD_CONFIG="chainctl-$PROJECT_ID-$CLUSTER_NAME"
+ACTIVE_GCLOUD_CONFIG="$(gcloud info --format='get(config.active_config_name)')"
+
+# If there is a chainctl.env in this deployment's directory, source it. This
+# file may contain environment variables to customize this script, or to be
+# injected into the k8s templates
+if [ -f "chainctl.env" ]; then
+  source "chainctl.env"
+fi
+
+create_gcloud_config() {
+  gcloud config configurations create "$GCLOUD_CONFIG"
+  gcloud config set project "$PROJECT_ID"
+  gcloud config set compute/zone us-central1-a
+  gcloud auth login --brief
+}
+
+select_gcloud_config() {
+  if [ "$ACTIVE_GCLOUD_CONFIG" != "$GCLOUD_CONFIG" ]; then
+    if gcloud config configurations list | grep -q "$GCLOUD_CONFIG"; then
+      gcloud config configurations activate "$GCLOUD_CONFIG"
+    else
+      create_gcloud_config
+    fi
+  fi
+}
+
+select-cluster() {
+  if [ ! -f "$KUBECONFIG" ]; then
+    mkdir -p "$(dirname "$KUBECONFIG")"
+    gcloud container clusters get-credentials "$CLUSTER_NAME"
+    kubectl config current-context
+  fi
+}
+
+banner() {
+  printf "\nChain Control\n\n"
+  printf "\033[36m%-30s\033[0m %s\n" "Project" $PROJECT_ID
+  printf "\033[36m%-30s\033[0m %s\n" "Cluster" $CLUSTER_NAME
+  printf "\033[36m%-30s\033[0m %s\n" "Gcloud Config" $ACTIVE_GCLOUD_CONFIG
+  printf "\033[36m%-30s\033[0m %s\n" "Kubectl Context" $(kubectl config current-context)
+  printf "\n"
+}
+
+usage() {
+  printf "Usage: chainctl <command>\n\n"
+  printf "\033[37m%-30s %s\033[0m\n" Command Description
+
+  printf "\033[36m%-30s\033[0m %s\n" replace-configmaps "Recreate the configuration map for this cluster"
+  printf "\033[36m%-30s\033[0m %s\n" pull-configmaps "Retrieve all configuration maps for this cluster as yaml files."
+
+  printf "\033[36m%-30s\033[0m %s\n" replace-secrets "Recreate the secrets for this cluster"
+  printf "\033[36m%-30s\033[0m %s\n" pull-secrets "Retrieve all secrets for this cluster as yaml files."
+
+  printf "\033[36m%-30s\033[0m %s\n" apply "Apply the k8s configuration templates as specified by TEMPLATES."
+  printf "\033[36m%-30s\033[0m %s\n" patch "Pull the latest image for a <deployment>."
+
+  printf "\033[36m%-30s\033[0m %s\n" info "Print useful k8s information such as pods, services and meta information."
+  printf "\033[36m%-30s\033[0m %s\n" bootstrap-cluster "Create the whole cluster from scratch."
+  printf "\033[36m%-30s\033[0m %s\n" proxy "Open a browser to the k8s proxy console."
+
+  printf "\033[36m%-30s\033[0m %s\n" certificates "Generate self signed certificates."
+  printf "\033[36m%-30s\033[0m %s\n" letsencrypt-certificates "Generate letsencrypt certificates."
+
+  printf "\033[36m%-30s\033[0m %s\n" create_gcloud_config "Create and activate a GCloud config for this workspace."
+}
+
+replace-configmaps() {
+  printf "\033[37m%-30s%-30s%s\033[0m\n" Name Type Progress
+
+  for file in $(find . -maxdepth 1 -iname '*.configmap.*'); do
+    local type="${file##*.}"
+    local name="$(basename "$file" ".configmap.$type")"
+
+    printf "%-30s%-30s" $name $type
+
+    ambiguous_file_guard $file
+
+    kubectl delete configmap $name --ignore-not-found=true >/dev/null
+    case "$type" in
+      yaml)
+        kubectl create configmap $name --from-file=$file
+        ;;
+      env)
+        kubectl create configmap $name --from-env-file=$file
+        ;;
+      *)
+        printf "Error: unknown configmap extension $type for $file.\n"
+        exit 2
+        ;;
+    esac
+  done
+}
+
+replace-secrets() {
+  printf "\033[37m%-30s%-30s%s\033[0m\n" Name Type Progress
+
+  for file in $(find . -maxdepth 1 -iname  '*.secret.*'); do
+    local type="${file##*.}"
+    local name="$(basename "$file" ".secret.$type")"
+
+    printf "%-30s%-30s" $name $type
+
+    ambiguous_file_guard $file
+
+    case "$type" in
+      yaml)
+        kubectl apply -f $file
+        ;;
+
+      env)
+        kubectl create secret generic $name --from-env-file=$file --dry-run=true -o yaml | kubectl apply -f -
+        ;;
+
+      crt)
+        if [ ! -f "$name.secret.key" ]; then
+          printf "Error: there must be an accompanying $name.secret.key file for $file.\n"
+          exit 2
+        fi
+        kubectl delete secret $name --ignore-not-found=true > /dev/null
+        kubectl create secret tls $name --cert=$file --key=$name.secret.key
+        ;;
+
+      key)
+        if [ ! -f "$name.secret.crt" ]; then
+          printf "Error: there must be an accompanying $name.secret.crt file for $file.\n"
+          exit 2
+        fi
+        # Do the work in crt case above
+        ;;
+
+      *)
+        kubectl create secret generic $name --from-file=$file --dry-run=true -o yaml | kubectl apply -f -
+        ;;
+    esac
+  done
+}
+
+apply() {
+  printf "\033[37m%-30s%-30s%s\033[0m\n" Template Progress
+  for template in $TEMPLATES; do
+    printf "%-30s" $template
+    kubectl apply -f "$ROOTDIR/templates/$template.yaml" | kubectl_fmt
+  done
+}
+
+kubectl_fmt() {
+  local spacing="$(printf '%30s' ' ')"
+  cat | sed "2,\$s/^/$spacing/"
+}
+
+files_with_same_basename() {
+  # use basename here to remove any path parts that could confuse find
+  local file=$(basename "$1")
+  local type="${file##*.}"
+  local basename="$(basename "$file" "$type")"
+  find . -maxdepth 1 -iname "$basename*" -not -name $file
+}
+
+ambiguous_file_guard() {
+  local file="$1"
+  local other_files=$(files_with_same_basename $file)
+  if [ $(echo $other_files | wc -w) -ge 1 ]; then
+    printf "Error: refusing to push file $file.\n"
+    printf "\nThe following file(s) also exist:\n\n$other_files\n\n"
+    printf "The presence of multiple files with the same basename creates an ambiguity.\n"
+    printf "Please reconcile this issue before continuing.\n"
+    exit 1
+  fi
+}
+
+duplicate_file_guard() {
+  local file="$1"
+  local existing_files=$(files_with_same_basename $file)
+  if [ $(echo $existing_files | wc -w) -ge 1 ]; then
+    printf "Error: refusing to pull file $file.\n"
+    printf "\nThe following file(s) already exist:\n\n$existing_files\n\n"
+    printf "Creating the file $file would create an ambiguity, move these files out of the way first.\n"
+    exit 1
+  fi
+}
+
+case "$1" in
+  replace-configmaps)
+    select_gcloud_config
+    select-cluster
+    banner
+    replace-configmaps
+    ;;
+
+  pull-configmaps)
+    select_gcloud_config
+    select-cluster
+    banner
+    printf "\033[37m%-30s%s\033[0m\n" Name Progress
+    for name in $(kubectl get configmaps --no-headers | awk '{print$1}'); do
+      printf "%-30s" $name
+      duplicate_file_guard $name.configmap.yaml
+      kubectl get configmaps $name -o yaml > $name.configmap.yaml
+      printf "\033[35m%s\033[0m\n" "$name.configmap.yaml"
+    done
+    ;;
+
+  replace-secrets)
+    select_gcloud_config
+    select-cluster
+    banner
+    replace-secrets
+    ;;
+
+  pull-secrets)
+    select_gcloud_config
+    select-cluster
+    banner
+    printf "\033[37m%-30s%s\033[0m\n" Name Progress
+    for name in $(kubectl get secrets --no-headers | awk '{print$1}'); do
+      printf "%-30s" $name
+      duplicate_file_guard $name.secret.yaml
+      kubectl get secrets $name -o yaml > $name.secret.yaml
+      printf "\033[35m%s\033[0m\n" "$name.secret.yaml"
+    done
+    ;;
+
+  apply)
+    select_gcloud_config
+    select-cluster
+    banner
+    apply
+    ;;
+
+  patch)
+    if [ -z "$2" ] ; then
+      printf "Error: no deployment parameter supplied.\n\n"
+      usage
+      exit 1
+    fi
+    deployment="$2"
+
+    select_gcloud_config
+    select-cluster
+    banner
+
+    printf '{"spec":{"template":{"metadata":{"labels":{"date":"%s"}}}}}' `date +%s` \
+       | xargs -0 kubectl patch deployment $deployment -p
+    ;;
+
+  info)
+    select_gcloud_config
+    select-cluster
+    banner
+    kubectl cluster-info
+    kubectl get secrets,configmaps,pvc,pv,nodes,ingress,svc,deploy,po -o wide
+    ;;
+
+  bootstrap-cluster)
+    select_gcloud_config
+    banner
+    gcloud container clusters create "$CLUSTER_NAME" --cluster-version 1.10
+    replace-secrets
+    replace-configmaps
+    apply
+    ;;
+
+  proxy)
+    select_gcloud_config
+    banner
+    open 'http://127.0.0.1:8001/ui'
+    kubectl proxy
+    ;;
+
+  certificates)
+    if [ -z "$DOMAIN" ]; then
+      printf "Error: you must define DOMAIN in your chainctl.env.\n\n"
+      exit 1
+    fi
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout sslcert.key \
+      -out sslcert.crt -subj "/OU=chainlink.development/CN=$DOMAIN/O=$DOMAIN"
+    ;;
+
+  letsencrypt-certificates)
+    certbot -c certbot.ini -d $DOMAIN --manual --preferred-challenges dns certonly
+    ;;
+
+  create_gcloud_config)
+    create_gcloud_config
+    ;;
+
+  "")
+    usage
+    ;;
+
+  help)
+    usage
+    ;;
+
+  *)
+    printf "Error: unknown command \"$1\".\n\n"
+    usage
+esac
