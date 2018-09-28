@@ -34,7 +34,7 @@ if [ -f "chainctl.env" ]; then
   source "chainctl.env"
 fi
 
-create_gcloud_config() {
+config() {
   gcloud config configurations create "$GCLOUD_CONFIG"
   gcloud config set project "$PROJECT_ID"
   gcloud config set compute/zone us-central1-a
@@ -46,7 +46,7 @@ select_gcloud_config() {
     if gcloud config configurations list | grep -q "$GCLOUD_CONFIG"; then
       gcloud config configurations activate "$GCLOUD_CONFIG"
     else
-      create_gcloud_config
+      config
     fi
   fi
 }
@@ -88,7 +88,7 @@ usage() {
   printf "\033[36m%-30s\033[0m %s\n" certificates "Generate self signed certificates."
   printf "\033[36m%-30s\033[0m %s\n" letsencrypt-certificates "Generate letsencrypt certificates."
 
-  printf "\033[36m%-30s\033[0m %s\n" create_gcloud_config "Create and activate a GCloud config for this workspace."
+  printf "\033[36m%-30s\033[0m %s\n" config "Create and activate a GCloud config for this workspace."
 }
 
 replace-configmaps() {
@@ -156,7 +156,7 @@ replace-secrets() {
         ;;
 
       *)
-        kubectl create secret generic $name --from-file=$file --dry-run=true -o yaml | kubectl apply -f -
+        kubectl create secret generic $name --from-file=$type=$file --dry-run=true -o yaml | kubectl apply -f -
         ;;
     esac
   done
@@ -180,7 +180,7 @@ files_with_same_basename() {
   local file=$(basename "$1")
   local type="${file##*.}"
   local basename="$(basename "$file" "$type")"
-  find . -maxdepth 1 -iname "$basename*" -not -name $file
+  find . -maxdepth 1 -iname "$basename*" -not -name $file -not -name "cl-sslcert*"
 }
 
 ambiguous_file_guard() {
@@ -299,16 +299,16 @@ case "$1" in
       printf "Error: you must define DOMAIN in your chainctl.env.\n\n"
       exit 1
     fi
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout sslcert.key \
-      -out sslcert.crt -subj "/OU=chainlink.development/CN=$DOMAIN/O=$DOMAIN"
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout cl-sslcert.secret.key \
+      -out cl-sslcert.secret.crt -subj "/OU=chainlink.development/CN=$DOMAIN/O=$DOMAIN"
     ;;
 
   letsencrypt-certificates)
     certbot -c certbot.ini -d $DOMAIN --manual --preferred-challenges dns certonly
     ;;
 
-  create_gcloud_config)
-    create_gcloud_config
+  config)
+    config
     ;;
 
   "")
