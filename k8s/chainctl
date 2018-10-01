@@ -180,7 +180,17 @@ files_with_same_basename() {
   local file=$(basename "$1")
   local type="${file##*.}"
   local basename="$(basename "$file" "$type")"
-  find . -maxdepth 1 -iname "$basename*" -not -name $file -not -name "cl-sslcert*"
+  case "$type" in
+      crt)
+        files=$files | grep -v key
+        ;;
+      key)
+        files=$files | grep -v crt
+        ;;
+      *)
+        find . -maxdepth 1 -iname "$basename*" -not -name $file
+        ;;
+  esac
 }
 
 ambiguous_file_guard() {
