@@ -34,7 +34,7 @@ if [ -f "chainctl.env" ]; then
   source "chainctl.env"
 fi
 
-config() {
+create_gcloud_config() {
   gcloud config configurations create "$GCLOUD_CONFIG"
   gcloud config set project "$PROJECT_ID"
   gcloud config set compute/zone us-central1-a
@@ -46,7 +46,7 @@ select_gcloud_config() {
     if gcloud config configurations list | grep -q "$GCLOUD_CONFIG"; then
       gcloud config configurations activate "$GCLOUD_CONFIG"
     else
-      config
+      create_gcloud_config
     fi
   fi
 }
@@ -88,7 +88,7 @@ usage() {
   printf "\033[36m%-30s\033[0m %s\n" certificates "Generate self signed certificates."
   printf "\033[36m%-30s\033[0m %s\n" letsencrypt-certificates "Generate letsencrypt certificates."
 
-  printf "\033[36m%-30s\033[0m %s\n" config "Create and activate a GCloud config for this workspace."
+  printf "\033[36m%-30s\033[0m %s\n" debug-config "DEBUG: Create and activate a GCloud config for this workspace."
 }
 
 replace-configmaps() {
@@ -317,8 +317,8 @@ case "$1" in
     certbot -c certbot.ini -d $DOMAIN --manual --preferred-challenges dns certonly
     ;;
 
-  config)
-    config
+  debug-config)
+    create_gcloud_config
     ;;
 
   "")
