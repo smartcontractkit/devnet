@@ -90,6 +90,7 @@ usage() {
 
   printf "\033[36m%-30s\033[0m %s\n" ssh "Open a SSH connection to the running POD."
   printf "\033[36m%-30s\033[0m %s\n" backup "Create a local backup of the '/data/chainlink' directory of the node."
+  printf "\033[36m%-30s\033[0m %s\n" scale "Scale the deployment to the desired number of instances."
 
   printf "\033[36m%-30s\033[0m %s\n" debug-config "DEBUG: Create and activate a GCloud config for this workspace."
 }
@@ -227,6 +228,12 @@ backup() {
   printf "Backup complete.\n"
 }
 
+scale() {
+  local num="$1"
+  local deployment=`kubectl get deploy | grep -v NAME | awk '{print$1}'`
+  kubectl scale --replicas=$num "deployment.extensions/$deployment"
+}
+
 case "$1" in
   replace-configmaps)
     select_gcloud_config
@@ -334,6 +341,13 @@ case "$1" in
     select-cluster
     banner
     backup
+    ;;
+
+  scale)
+    select_gcloud_config
+    select-cluster
+    banner
+    scale "$2"
     ;;
 
   debug-config)
