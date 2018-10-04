@@ -89,6 +89,7 @@ usage() {
   printf "\033[36m%-30s\033[0m %s\n" letsencrypt-certificates "Generate letsencrypt certificates."
 
   printf "\033[36m%-30s\033[0m %s\n" ssh "Open a SSH connection to the running POD."
+  printf "\033[36m%-30s\033[0m %s\n" attach "View the current output of the running POD."
   printf "\033[36m%-30s\033[0m %s\n" backup "Create a local backup of the '/data/chainlink' directory of the node."
   printf "\033[36m%-30s\033[0m %s\n" scale "Scale the deployment to the desired number of instances."
 
@@ -336,6 +337,12 @@ case "$1" in
     kubectl exec -it `kubectl get pods | grep -v NAME | awk '{print$1}'` -- /bin/bash
     ;;
 
+  attach)
+    select_gcloud_config
+    select-cluster
+    kubectl attach `kubectl get pods | grep -v NAME | awk '{print$1}'`
+    ;;
+
   backup)
     select_gcloud_config
     select-cluster
@@ -349,6 +356,7 @@ case "$1" in
     banner
     scale "$2"
     ;;
+
 
   debug-config)
     create_gcloud_config
