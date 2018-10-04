@@ -79,7 +79,7 @@ usage() {
   printf "\033[36m%-30s\033[0m %s\n" pull-secrets "Retrieve all secrets for this cluster as yaml files."
 
   printf "\033[36m%-30s\033[0m %s\n" apply "Apply the k8s configuration templates as specified by TEMPLATES."
-  printf "\033[36m%-30s\033[0m %s\n" patch "Pull the latest image for a <deployment>."
+  printf "\033[36m%-30s\033[0m %s\n" patch "Pull the latest image for the current deployment."
 
   printf "\033[36m%-30s\033[0m %s\n" info "Print useful k8s information such as pods, services and meta information."
   printf "\033[36m%-30s\033[0m %s\n" bootstrap-cluster "Create the whole cluster from scratch."
@@ -276,12 +276,7 @@ case "$1" in
     ;;
 
   patch)
-    if [ -z "$2" ] ; then
-      printf "Error: no deployment parameter supplied.\n\n"
-      usage
-      exit 1
-    fi
-    deployment="$2"
+    deployment=`kubectl get deploy | grep -v NAME | awk '{print$1}'`
 
     select_gcloud_config
     select-cluster
