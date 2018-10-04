@@ -89,6 +89,7 @@ usage() {
   printf "\033[36m%-30s\033[0m %s\n" letsencrypt-certificates "Generate letsencrypt certificates."
 
   printf "\033[36m%-30s\033[0m %s\n" ssh "Open a SSH connection to the running POD."
+  printf "\033[36m%-30s\033[0m %s\n" backup "Create a local backup of the '/data/chainlink' directory of the node."
 
   printf "\033[36m%-30s\033[0m %s\n" debug-config "DEBUG: Create and activate a GCloud config for this workspace."
 }
@@ -218,6 +219,14 @@ duplicate_file_guard() {
   fi
 }
 
+backup() {
+  printf "Backing up files.\n"
+  local directory="backup-`date +%s`"
+  mkdir $directory
+  kubectl cp "default/`kubectl get pods | grep -v NAME | awk '{print$1}'`":data/chainlink/ $directory
+  printf "Backup complete.\n"
+}
+
 case "$1" in
   replace-configmaps)
     select_gcloud_config
@@ -320,7 +329,16 @@ case "$1" in
     ;;
 
   ssh)
+    select_gcloud_config
+    select-cluster
     kubectl exec -it `kubectl get pods | grep -v NAME | awk '{print$1}'` -- /bin/bash
+    ;;
+
+  backup)
+    select_gcloud_config
+    select-cluster
+    banner
+    backup
     ;;
 
   debug-config)
