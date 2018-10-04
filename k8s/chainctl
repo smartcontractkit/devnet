@@ -221,17 +221,25 @@ duplicate_file_guard() {
   fi
 }
 
+ssh() {
+  kubectl exec -it `kubectl get pods --no-headers | awk '{print$1}'` -- /bin/bash
+}
+
+attach() {
+  kubectl attach `kubectl get pods --no-headers | awk '{print$1}'`
+}
+
 backup() {
   printf "Backing up files.\n"
   local directory="backup-`date +%s`"
   mkdir $directory
-  kubectl cp "default/`kubectl get pods | grep -v NAME | awk '{print$1}'`":data/chainlink/ $directory
+  kubectl cp "default/`kubectl get pods --no-headers | awk '{print$1}'`":data/chainlink/ $directory
   printf "Backup complete.\n"
 }
 
 scale() {
   local num="$1"
-  local deployment=`kubectl get deploy | grep -v NAME | awk '{print$1}'`
+  local deployment=`kubectl get deploy --no-headers | awk '{print$1}'`
   kubectl scale --replicas=$num "deployment.extensions/$deployment"
 }
 
@@ -284,7 +292,7 @@ case "$1" in
     ;;
 
   patch)
-    deployment=`kubectl get deploy | grep -v NAME | awk '{print$1}'`
+    deployment=`kubectl get deploy --no-headers | awk '{print$1}'`
 
     select_gcloud_config
     select-cluster
@@ -334,13 +342,13 @@ case "$1" in
   ssh)
     select_gcloud_config
     select-cluster
-    kubectl exec -it `kubectl get pods | grep -v NAME | awk '{print$1}'` -- /bin/bash
+    ssh
     ;;
 
   attach)
     select_gcloud_config
     select-cluster
-    kubectl attach `kubectl get pods | grep -v NAME | awk '{print$1}'`
+    attach
     ;;
 
   backup)
