@@ -88,6 +88,8 @@ usage() {
   printf "\033[36m%-30s\033[0m %s\n" certificates "Generate self signed certificates."
   printf "\033[36m%-30s\033[0m %s\n" letsencrypt-certificates "Generate letsencrypt certificates."
 
+  printf "\033[36m%-30s\033[0m %s\n" ssh "Open a SSH connection to the running POD."
+
   printf "\033[36m%-30s\033[0m %s\n" debug-config "DEBUG: Create and activate a GCloud config for this workspace."
 }
 
@@ -315,6 +317,10 @@ case "$1" in
 
   letsencrypt-certificates)
     certbot -c certbot.ini -d $DOMAIN --manual --preferred-challenges dns certonly
+    ;;
+
+  ssh)
+    kubectl exec -it `kubectl get pods | grep -v NAME | awk '{print$1}'` -- /bin/bash
     ;;
 
   debug-config)
