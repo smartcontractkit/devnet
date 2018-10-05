@@ -79,7 +79,7 @@ usage() {
   printf "\033[36m%-30s\033[0m %s\n" pull-secrets "Retrieve all secrets for this cluster as yaml files."
 
   printf "\033[36m%-30s\033[0m %s\n" apply "Apply the k8s configuration templates as specified by TEMPLATES."
-  printf "\033[36m%-30s\033[0m %s\n" patch "Pull the latest image for the current deployment."
+  printf "\033[36m%-30s\033[0m %s\n" patch "PARAMS: <deployment>. Pull the latest image for a <deployment>."
 
   printf "\033[36m%-30s\033[0m %s\n" info "Print useful k8s information such as pods, services and meta information."
   printf "\033[36m%-30s\033[0m %s\n" bootstrap-cluster "Create the whole cluster from scratch."
@@ -88,10 +88,10 @@ usage() {
   printf "\033[36m%-30s\033[0m %s\n" certificates "Generate self signed certificates."
   printf "\033[36m%-30s\033[0m %s\n" letsencrypt-certificates "Generate letsencrypt certificates."
 
-  printf "\033[36m%-30s\033[0m %s\n" ssh "Open a SSH connection to the running POD."
-  printf "\033[36m%-30s\033[0m %s\n" attach "View the current output of the running POD."
+  printf "\033[36m%-30s\033[0m %s\n" ssh "PARAMS: <deployment>. Open a SSH connection to the <deployment>."
+  printf "\033[36m%-30s\033[0m %s\n" attach "PARAMS: <deployment>. View the current output of the running POD on <deployment>."
   printf "\033[36m%-30s\033[0m %s\n" backup "Create a local backup of the '/data/chainlink' directory of the node."
-  printf "\033[36m%-30s\033[0m %s\n" scale "Scale the deployment to the desired number of instances."
+  printf "\033[36m%-30s\033[0m %s\n" scale "PARAMS: <deployment> <number>. Scale a <deployment> to the desired <number> of instances."
 
   printf "\033[36m%-30s\033[0m %s\n" debug-config "DEBUG: Create and activate a GCloud config for this workspace."
 }
@@ -221,12 +221,29 @@ duplicate_file_guard() {
   fi
 }
 
+param_check() {
+  for var in "$@"
+  do
+    if [ -z $var ] ; then
+        printf "Error: no deployment parameter supplied.\n\n"
+        usage
+        exit 1
+    fi
+  done
+}
+
+patch() {
+  local deployment=`kubectl get deploy --no-headers | grep "$1" | awk '{print$1}'`
+  printf '{"spec":{"template":{"metadata":{"labels":{"date":"%s"}}}}}' `date +%s` \
+       | xargs -0 kubectl patch deployment $deployment -p
+}
+
 ssh() {
-  kubectl exec -it `kubectl get pods --no-headers | awk '{print$1}'` -- /bin/bash
+  kubectl exec -it `kubectl get pods --no-headers | grep "$1" | awk '{print$1}'` -- /bin/bash
 }
 
 attach() {
-  kubectl attach `kubectl get pods --no-headers | awk '{print$1}'`
+  kubectl attach `kubectl get pods --no-headers | grep "$1" | awk '{print$1}'`
 }
 
 backup() {
@@ -238,8 +255,8 @@ backup() {
 }
 
 scale() {
-  local num="$1"
-  local deployment=`kubectl get deploy --no-headers | awk '{print$1}'`
+  local deployment=`kubectl get deploy --no-headers | grep "$1" | awk '{print$1}'`
+  local num="$2"
   kubectl scale --replicas=$num "deployment.extensions/$deployment"
 }
 
@@ -292,14 +309,11 @@ case "$1" in
     ;;
 
   patch)
-    deployment=`kubectl get deploy --no-headers | awk '{print$1}'`
-
+    param_check "$2"
     select_gcloud_config
     select-cluster
     banner
-
-    printf '{"spec":{"template":{"metadata":{"labels":{"date":"%s"}}}}}' `date +%s` \
-       | xargs -0 kubectl patch deployment $deployment -p
+    patch "$2"
     ;;
 
   info)
@@ -340,15 +354,17 @@ case "$1" in
     ;;
 
   ssh)
+    param_check "$2"
     select_gcloud_config
     select-cluster
-    ssh
+    ssh "$2"
     ;;
 
   attach)
+    param_check "$2"
     select_gcloud_config
     select-cluster
-    attach
+    attach "$2"
     ;;
 
   backup)
@@ -359,12 +375,12 @@ case "$1" in
     ;;
 
   scale)
+    param_check "$2" "$3"
     select_gcloud_config
     select-cluster
     banner
-    scale "$2"
+    scale "$2" "$3"
     ;;
-
 
   debug-config)
     create_gcloud_config
