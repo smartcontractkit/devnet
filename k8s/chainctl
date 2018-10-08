@@ -92,6 +92,7 @@ usage() {
   printf "\033[36m%-30s\033[0m %s\n" attach "PARAMS: <deployment>. View the current output of the running POD on <deployment>."
   printf "\033[36m%-30s\033[0m %s\n" backup "Create a local backup of the '/data/chainlink' directory of the node."
   printf "\033[36m%-30s\033[0m %s\n" scale "PARAMS: <deployment> <number>. Scale a <deployment> to the desired <number> of instances."
+  printf "\033[36m%-30s\033[0m %s\n" delete-evicted "Delete the Evicted pods from cluster."
 
   printf "\033[36m%-30s\033[0m %s\n" debug-config "DEBUG: Create and activate a GCloud config for this workspace."
 }
@@ -239,18 +240,18 @@ patch() {
 }
 
 ssh() {
-  kubectl exec -it `kubectl get pods --no-headers | grep "$1" | awk '{print$1}'` -- /bin/bash
+  kubectl exec -it `kubectl get pods --no-headers | grep Running | grep "$1" | awk '{print$1}'` -- /bin/bash
 }
 
 attach() {
-  kubectl attach `kubectl get pods --no-headers | grep "$1" | awk '{print$1}'`
+  kubectl attach `kubectl get pods --no-headers | grep Running | grep "$1" | awk '{print$1}'`
 }
 
 backup() {
   printf "Backing up files.\n"
   local directory="backup-`date +%s`"
   mkdir $directory
-  kubectl cp "default/`kubectl get pods --no-headers | awk '{print$1}'`":data/chainlink/ $directory
+  kubectl cp "default/`kubectl get pods --no-headers | grep Running | awk '{print$1}'`":data/chainlink/ $directory
   printf "Backup complete.\n"
 }
 
@@ -258,6 +259,10 @@ scale() {
   local deployment=`kubectl get deploy --no-headers | grep "$1" | awk '{print$1}'`
   local num="$2"
   kubectl scale --replicas=$num "deployment.extensions/$deployment"
+}
+
+delete-evicted() {
+  kubectl get pods --all-namespaces | grep Evicted | awk '{print $2 " --namespace=" $1}' | xargs kubectl delete pod
 }
 
 case "$1" in
@@ -380,6 +385,12 @@ case "$1" in
     select-cluster
     banner
     scale "$2" "$3"
+    ;;
+
+  delete-evicted)
+    select_gcloud_config
+    select-cluster
+    delete-evicted
     ;;
 
   debug-config)
