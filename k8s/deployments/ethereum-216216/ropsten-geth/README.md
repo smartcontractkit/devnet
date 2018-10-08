@@ -1,3 +1,3 @@
 # Ropsten Geth Deployment
 
-This is a deployment of geth for the Ropsten test network.
+This is a deployment of Geth for the Ropsten test network.

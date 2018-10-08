@@ -36,7 +36,7 @@ spec:
       containers:
         - name: ethereum
           image: ethereum/client-go:latest
-          args: ["--networkid", "$(NETWORK_ID)", "--ws", "--wsport", "8546", "--wsaddr", "0.0.0.0", "--wsorigins", "*", "--rpc", "--rpcport", "8545", "--rpcaddr", "0.0.0.0", "--rpccorsdomain", "*", "--datadir", "/data/ethereum", "--ipcdisable"]
+          args: ["--syncmode", "$(SYNCMODE)", "--$(CHAIN)", "--ws", "--wsport", "8546", "--wsaddr", "0.0.0.0", "--wsorigins", "*", "--rpc", "--rpcport", "8545", "--rpcaddr", "0.0.0.0", "--rpccorsdomain", "*", "--datadir", "/data/ethereum", "--ipcdisable"]
           ports:
             - containerPort: 8545
             - containerPort: 8546
@@ -47,11 +47,16 @@ spec:
               protocol: UDP
               containerPort: 30303
           env:
-            - name: NETWORK_ID
+            - name: CHAIN
               valueFrom:
                configMapKeyRef:
                  name: ethereum-cfg
-                 key: NETWORK_ID
+                 key: CHAIN
+            - name: SYNCMODE
+              valueFrom:
+               configMapKeyRef:
+                 name: ethereum-cfg
+                 key: SYNCMODE
           volumeMounts:
             - name: ethereum-storage
               mountPath: /data
