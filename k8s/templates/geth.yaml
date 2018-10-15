@@ -1,4 +1,16 @@
 ---
+ kind: Ingress
+ metadata:
+   name: chainlink-ingress
+ annotations:
+   kubernetes.io/ingress.allow-http: "false"
+ spec:
+  tls:
+  - secretName: cl-sslcert
+  backend:
+   serviceName: chainlink-svc
+   servicePort: 80
+---
 kind: Service
 apiVersion: v1
 metadata:

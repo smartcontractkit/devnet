@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  CHAIN: testnet
+  SYNCMODE: fast
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2018-10-08T21:51:31Z
+  name: ethereum-cfg
+  namespace: default
+  resourceVersion: "514"
+  selfLink: /api/v1/namespaces/default/configmaps/ethereum-cfg
+  uid: 51328131-cb44-11e8-a867-42010a80023f

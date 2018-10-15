@@ -5,7 +5,7 @@ set -e
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 # This command should be executed from within a deployment directory, which is
-# named after the $PROJECT_ID followed by a period, then the $CLUSTER_NAME.
+# named after the $PROJECT_ID followed by the $CLUSTER_NAME: $PROJECT_ID/$CLUSTER_NAME.
 #
 # Alternatively you can override these with environment variables.
 if [ -z "$PROJECT_ID" ]; then
@@ -63,7 +63,8 @@ banner() {
   printf "\nChain Control\n\n"
   printf "\033[36m%-30s\033[0m %s\n" "Project" $PROJECT_ID
   printf "\033[36m%-30s\033[0m %s\n" "Cluster" $CLUSTER_NAME
-  printf "\033[36m%-30s\033[0m %s\n" "Gcloud Config" $ACTIVE_GCLOUD_CONFIG
+  printf "\033[36m%-30s\033[0m %s\n" "Active Gcloud Config" $ACTIVE_GCLOUD_CONFIG
+  printf "\033[36m%-30s\033[0m %s\n" "Gcloud Config" $GCLOUD_CONFIG
   printf "\033[36m%-30s\033[0m %s\n" "Kubectl Context" $(kubectl config current-context)
   printf "\n"
 }
