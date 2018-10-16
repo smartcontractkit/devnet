@@ -1,15 +1,19 @@
 ---
- kind: Ingress
- metadata:
-   name: chainlink-ingress
- annotations:
-   kubernetes.io/ingress.allow-http: "false"
- spec:
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ethereum-ingress
+spec:
   tls:
-  - secretName: cl-sslcert
-  backend:
-   serviceName: chainlink-svc
-   servicePort: 80
+    secretName: tls-secret
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: ethereum-svc
+          servicePort: 80
+        # Can't have ingress rules with the same path but different port.
 ---
 kind: Service
 apiVersion: v1
@@ -46,6 +50,18 @@ spec:
         app: ethereum
     spec:
       containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 8545
+            - containerPort: 8546
+            - name: listening
+              protocol: TCP
+              containerPort: 30303
+            - name: discovery
+              protocol: UDP
+              containerPort: 30303
+
         - name: ethereum
           image: ethereum/client-go:latest
           args: ["--networkid", "$(NETWORK_ID)", "--ws", "--wsport", "8546", "--wsaddr", "0.0.0.0", "--wsorigins", "*", "--rpc", "--rpcport", "8545", "--rpcaddr", "0.0.0.0", "--rpccorsdomain", "*", "--datadir", "/data/ethereum", "--ipcdisable"]

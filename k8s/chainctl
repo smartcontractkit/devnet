@@ -69,6 +69,17 @@ banner() {
   printf "\n"
 }
 
+nginxbanner() {
+  if [[ " ${TEMPLATES[@]} " =~ " nginx " ]]; then
+    printf "\n"
+    printf "\033[36m%-30s\033[0m %s" "Ethereum Ingress Controller"
+    printf "\n"
+    printf "\n"
+    return 0
+  fi
+  return 1
+}
+
 usage() {
   printf "Usage: chainctl <command>\n\n"
   printf "\033[37m%-30s %s\033[0m\n" Command Description
@@ -323,6 +334,9 @@ case "$1" in
     banner
     kubectl cluster-info
     kubectl get secrets,configmaps,pvc,pv,nodes,ingress,svc,deploy,po -o wide
+    if nginxbanner; then
+      kubectl get all,secrets,configmaps,ingress --namespace=nginx-ingress -o wide
+    fi
     ;;
 
   bootstrap-cluster)
