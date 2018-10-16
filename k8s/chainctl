@@ -85,7 +85,8 @@ usage() {
   printf "\033[36m%-30s\033[0m %s\n" bootstrap-cluster "Create the whole cluster from scratch."
   printf "\033[36m%-30s\033[0m %s\n" proxy "Open a browser to the k8s proxy console."
 
-  printf "\033[36m%-30s\033[0m %s\n" certificates "Generate self signed certificates."
+  printf "\033[36m%-30s\033[0m %s\n" certificates "Generate self signed certificates with naming conventions for chainlink nodes."
+  printf "\033[36m%-30s\033[0m %s\n" ethcertificates "Generate self signed certificates with naming conventions for ethereum nodes."
   printf "\033[36m%-30s\033[0m %s\n" letsencrypt-certificates "Generate letsencrypt certificates."
 
   printf "\033[36m%-30s\033[0m %s\n" ssh "PARAMS: <deployment>. Open a SSH connection to the <deployment>."
@@ -352,6 +353,15 @@ case "$1" in
     fi
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout cl-sslcert.secret.key \
       -out cl-sslcert.secret.crt -subj "/OU=chainlink.development/CN=$DOMAIN/O=$DOMAIN"
+    ;;
+
+  ethcertificates)
+    if [ -z "$DOMAIN" ]; then
+      printf "Error: you must define DOMAIN in your chainctl.env.\n\n"
+      exit 1
+    fi
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ethereum-sslcert.secret.key \
+      -out ethereum-sslcert.secret.crt -subj "/OU=chainlink.development/CN=$DOMAIN/O=$DOMAIN"
     ;;
 
   letsencrypt-certificates)

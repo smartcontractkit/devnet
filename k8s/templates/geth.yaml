@@ -34,9 +34,8 @@ spec:
         app: ethereum
     spec:
       containers:
-        - name: ethereum
-          image: ethereum/client-go:latest
-          args: ["--syncmode", "$(SYNCMODE)", "--$(CHAIN)", "--ws", "--wsport", "8546", "--wsaddr", "0.0.0.0", "--wsorigins", "*", "--rpc", "--rpcport", "8545", "--rpcaddr", "0.0.0.0", "--rpccorsdomain", "*", "--datadir", "/data/ethereum", "--ipcdisable"]
+        - name: nginx
+          image: nginx:latest
           ports:
             - containerPort: 8545
             - containerPort: 8546
@@ -46,6 +45,15 @@ spec:
             - name: discovery
               protocol: UDP
               containerPort: 30303
+          volumeMounts:
+            - name: ethereum-crt
+              mountPath: /secrets/tls
+              readOnly: true
+            - name: nginx-conf-volume
+              mountPath: /etc/nginx/conf.d
+        - name: ethereum
+          image: ethereum/client-go:latest
+          args: ["--syncmode", "$(SYNCMODE)", "--$(CHAIN)", "--port", "60303", "--ws", "--wsport", "18546", "--wsaddr", "0.0.0.0", "--wsorigins", "*", "--rpc", "--rpcport", "18545", "--rpcaddr", "0.0.0.0", "--rpccorsdomain", "*", "--datadir", "/data/ethereum", "--ipcdisable"]
           env:
             - name: CHAIN
               valueFrom:
@@ -64,6 +72,12 @@ spec:
         - name: ethereum-storage
           persistentVolumeClaim:
             claimName: ethereum-pv-claim
+        - name: ethereum-crt
+          secret:
+            secretName: ethereum-sslcert
+        - name: nginx-conf-volume
+          configMap:
+            name: nginx-configmap
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -75,3 +89,46 @@ spec:
   resources:
     requests:
       storage: 128Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-configmap
+data:
+  nginx.conf: |
+    server {
+      listen 8545 ssl;
+      ssl_certificate           /secrets/tls/tls.crt;
+      ssl_certificate_key       /secrets/tls/tls.key;
+      location / {
+        proxy_pass  http://localhost:18545;
+      }
+    }
+
+    server {
+      listen 8546 ssl;
+      ssl_certificate           /secrets/tls/tls.crt;
+      ssl_certificate_key       /secrets/tls/tls.key;
+
+      location / {
+        proxy_http_version 1.1;
+
+        proxy_connect_timeout 7d;
+        proxy_send_timeout 7d;
+        proxy_read_timeout 7d;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+
+        proxy_pass  http://localhost:18546;
+      }
+    }
+
+    server {
+      listen 30303 ssl;
+      ssl_certificate           /secrets/tls/tls.crt;
+      ssl_certificate_key       /secrets/tls/tls.key;
+      location / {
+        proxy_pass  http://localhost:60303;
+      }
+    }
