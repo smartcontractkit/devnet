@@ -112,7 +112,7 @@ replace-configmaps() {
     kubectl delete configmap $name --ignore-not-found=true >/dev/null
     case "$type" in
       yaml)
-        kubectl create configmap $name --from-file=$file
+        kubectl apply -f $file
         ;;
       env)
         kubectl create configmap $name --from-env-file=$file
