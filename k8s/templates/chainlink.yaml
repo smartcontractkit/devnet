@@ -73,6 +73,9 @@ spec:
             - name: chainlink-crt
               mountPath: /secrets/tls
               readOnly: true
+            - name: ethereum-crt
+              mountPath: /secrets/ethereum
+              readOnly: true
       volumes:
         - name: chainlink-storage
           persistentVolumeClaim:
@@ -86,6 +89,10 @@ spec:
         - name: chainlink-crt
           secret:
             secretName: cl-sslcert
+        - name: ethereum-crt
+          secret:
+            secretName: ethereum-sslcert
+            optional: true
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
