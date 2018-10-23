@@ -35,7 +35,7 @@ spec:
     spec:
       containers:
         - name: ethereum
-          image: parity/parity:latest
+          image: parity/parity:stable
           args: ["--chain", "$(CHAIN)", "--ws-port", "8546", "--ws-interface", "all", "--ws-origins", "all", "--jsonrpc-port", "8545", "--jsonrpc-interface", "all", "--jsonrpc-hosts", "all", "--jsonrpc-cors", "all", "--db-path", "/data/ethereum", "--no-ipc"]
           ports:
             - containerPort: 8545
