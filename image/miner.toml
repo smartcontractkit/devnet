@@ -3,9 +3,6 @@ chain = "smartNet.json"
 db_path = "./data/miner"
 keys_path = "./keys"
 
-[dapps]
-path = "./dapps"
-
 [network]
 reserved_peers = "./network.txt"
 
