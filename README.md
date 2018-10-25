@@ -1,9 +1,8 @@
-# Infrastructure
+# Devnet
 
-Automation for Smart Contract's infrastructure and software.
+Automation for chainlink and ethereum developer nodes.
 
   * image - [Docker](https://www.docker.com/) image for chainlink
-  * k8s - [Kubernetes](https://kubernetes.io/) configurations for chainlink
 
 ## Contributing
 

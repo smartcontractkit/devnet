@@ -1,7 +1,0 @@
-#!/bin/bash
-
-set -e
-
-aws logs create-log-group --log-group-name log-testnet --region us-east-1 || true
-ecs-cli configure profile --profile-name chainlink-personal --access-key $AWS_ACCESS_KEY_ID --secret-key $AWS_SECRET_ACCESS_KEY
-ecs-cli configure --cluster chainlink-testnet --default-launch-type EC2 --region us-east-1 --config-name chainlink-testnet
