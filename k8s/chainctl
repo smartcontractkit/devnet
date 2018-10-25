@@ -241,11 +241,11 @@ patch() {
 }
 
 ssh() {
-  kubectl exec -it `kubectl get pods --no-headers | grep Running | grep "$1" | awk '{print$1}'` -- /bin/bash
+  kubectl exec -it `kubectl get pods --no-headers | grep Running | grep "$1" | awk '{print$1}'` -c "$1" -- /bin/sh
 }
 
 attach() {
-  kubectl attach `kubectl get pods --no-headers | grep Running | grep "$1" | awk '{print$1}'`
+  kubectl attach `kubectl get pods --no-headers | grep Running | grep "$1" | awk '{print$1}'` -c "$1"
 }
 
 backup() {
