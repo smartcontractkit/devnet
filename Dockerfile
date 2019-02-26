@@ -1,4 +1,4 @@
-FROM parity/parity:v2.0.6
+FROM parity/parity:v2.2.11
 COPY . /devnet
 WORKDIR /devnet
 ENTRYPOINT ["/parity/parity"]
