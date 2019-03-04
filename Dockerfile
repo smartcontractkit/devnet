@@ -1,7 +1,9 @@
 FROM parity/parity:v2.2.11
 COPY . /devnet
+USER root
+RUN chown -R parity /devnet
+USER parity
 WORKDIR /devnet
-ENTRYPOINT ["/parity/parity"]
 CMD ["--config", "/devnet/miner.toml"]
 
 EXPOSE 8546
