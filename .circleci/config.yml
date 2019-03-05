@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  devnet-run:
+    docker:
+      - image: docker:18-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: docker build -t smartcontract/devnet:latest .
+      - run:
+          name: start devnet
+          command: docker run -p 8545:8545 -t --name devnet smartcontract/devnet:latest
+          background: true
+      - run: sleep 2
+      - run: |
+          docker exec devnet \
+          curl -sS --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x9CA9d2D5E04012C9Ed24C0e513C9bfAa4A2dD77f", "latest"],"id":1}' -H "Content-Type: application/json" -X POST localhost:8545
+workflows:
+  version: 2
+  test:
+    jobs:
+      - devnet-run
