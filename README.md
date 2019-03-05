@@ -1,4 +1,4 @@
-# Devnet
+# Devnet [![CircleCI](https://circleci.com/gh/smartcontractkit/devnet.svg?style=shield)](https://circleci.com/gh/smartcontractkit/devnet)
 
 Automation for chainlink and ethereum developer nodes.
 
