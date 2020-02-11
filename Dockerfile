@@ -1,4 +1,4 @@
-FROM parity/parity:v2.2.11
+FROM parity/parity:v2.7.2-stable
 COPY . /devnet
 USER root
 RUN chown -R parity /devnet
