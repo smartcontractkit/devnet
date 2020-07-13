@@ -4,7 +4,7 @@ USER root
 RUN chown -R parity /devnet
 USER parity
 WORKDIR /devnet
-CMD ["--config", "/devnet/miner.toml"]
+CMD ["--force-sealing", "--config", "/devnet/miner.toml"]
 
 EXPOSE 8546
 EXPOSE 8545
