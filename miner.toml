@@ -1,10 +1,10 @@
 [parity]
-chain = "smartNet.json"
-db_path = "./data/miner"
-keys_path = "./keys"
+chain = "/devnet/smartNet.json"
+db_path = "/devnet/data/miner"
+keys_path = "/devnet/keys"
 
 [network]
-reserved_peers = "./network.txt"
+reserved_peers = "/devnet/network.txt"
 
 [rpc]
 disable = false
@@ -16,7 +16,7 @@ interface = "all"
 
 [account]
 unlock = ["0xDe554B6c292f5e5794A68Dc560a537DD89d3b03E", "0x9CA9d2D5E04012C9Ed24C0e513C9bfAa4A2dD77f", "0xa5F108b6d82b9F080325F935F3BAf89e0042CAC8"]
-password = ["node.pwds"]
+password = ["/devnet/node.pwds"]
 
 [mining]
 engine_signer = "0xDe554B6c292f5e5794A68Dc560a537DD89d3b03E"

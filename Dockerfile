@@ -1,9 +1,7 @@
-FROM parity/parity:v2.7.2-stable
+FROM openethereum/openethereum:latest
 COPY . /devnet
 USER root
-RUN chown -R parity /devnet
-USER parity
-WORKDIR /devnet
+RUN chown -R openethereum /devnet
 CMD ["--reseal-max-period", "1000", "--force-sealing", "--config", "/devnet/miner.toml"]
 
 EXPOSE 8546
